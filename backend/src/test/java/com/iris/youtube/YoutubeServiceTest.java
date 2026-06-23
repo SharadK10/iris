@@ -96,6 +96,30 @@ class YoutubeServiceTest {
     }
 
     @Test
+    void decodesHtmlEntitiesInTitle() {
+        YoutubeService service = new YoutubeService(RestClient.builder(), "k", "https://api.test/youtube/v3");
+        String[] result = service.extractArtistAndTitle("ArtistVEVO", "Tom &amp; Jerry - Don&#39;t Stop");
+        assertThat(result[0]).isEqualTo("Tom & Jerry");
+        assertThat(result[1]).isEqualTo("Don't Stop");
+    }
+
+    @Test
+    void decodesHtmlEntitiesInTopicChannel() {
+        YoutubeService service = new YoutubeService(RestClient.builder(), "k", "https://api.test/youtube/v3");
+        String[] result = service.extractArtistAndTitle("Sigur R&#243;s - Topic", "Hopp&#243;polla");
+        assertThat(result[0]).isEqualTo("Sigur Rós");
+        assertThat(result[1]).isEqualTo("Hoppópolla");
+    }
+
+    @Test
+    void stripsPipeDelimitedMarketingTail() {
+        YoutubeService service = new YoutubeService(RestClient.builder(), "k", "https://api.test/youtube/v3");
+        String[] result = service.extractArtistAndTitle("ArtistVEVO", "Adele - Hello | Official Music Video");
+        assertThat(result[0]).isEqualTo("Adele");
+        assertThat(result[1]).isEqualTo("Hello");
+    }
+
+    @Test
     void fallsBackToChannelWhenNoPattern() {
         YoutubeService service = new YoutubeService(RestClient.builder(), "k", "https://api.test/youtube/v3");
         String[] result = service.extractArtistAndTitle("Lofi Girl", "lofi hip hop radio");

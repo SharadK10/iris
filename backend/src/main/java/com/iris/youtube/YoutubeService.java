@@ -5,6 +5,7 @@ import com.iris.bloom.Bloom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.HtmlUtils;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -25,6 +26,10 @@ public class YoutubeService {
             "\\s*[\\(\\[][^\\)\\]]*\\b(official|lyric|lyrics|audio|video|visualizer|explicit|remaster(ed)?|hd|4k|mv|m/v|hq|full)\\b[^\\)\\]]*[\\)\\]]",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern SPLIT = Pattern.compile("\\s+[-–—]\\s+");
+    // Strips a trailing pipe-delimited marketing tail, e.g. "Song | Official Music Video".
+    private static final Pattern NOISE_TAIL = Pattern.compile(
+            "\\s*[|｜]\\s*[^|｜]*\\b(official|lyric|lyrics|audio|video|visualizer|explicit|remaster(ed)?|hd|4k|mv|m/v|hq|full|music)\\b[^|｜]*$",
+            Pattern.CASE_INSENSITIVE);
 
     private final RestClient client;
     private final String apiKey;
@@ -117,10 +122,11 @@ public class YoutubeService {
 
     // Returns [artist, title], pulling clean music metadata out of YouTube's video-shaped fields.
     String[] extractArtistAndTitle(String channel, String rawTitle) {
+        String decodedChannel = HtmlUtils.htmlUnescape(channel == null ? "" : channel);
         String title = cleanTitle(rawTitle);
 
-        if (channel.endsWith("- Topic")) {
-            String artist = channel.substring(0, channel.length() - "- Topic".length()).trim();
+        if (decodedChannel.endsWith("- Topic")) {
+            String artist = decodedChannel.substring(0, decodedChannel.length() - "- Topic".length()).trim();
             return new String[] {artist, title};
         }
 
@@ -129,14 +135,17 @@ public class YoutubeService {
             return new String[] {parts[0].trim(), parts[1].trim()};
         }
 
-        return new String[] {channel.trim(), title};
+        return new String[] {decodedChannel.trim(), title};
     }
 
     private String cleanTitle(String title) {
-        String cleaned = NOISE.matcher(title).replaceAll("");
+        // The YouTube API returns HTML-escaped titles (&amp;, &#39;, &#243;…); decode first.
+        String decoded = HtmlUtils.htmlUnescape(title == null ? "" : title);
+        String cleaned = NOISE.matcher(decoded).replaceAll("");
+        cleaned = NOISE_TAIL.matcher(cleaned).replaceAll("");
         cleaned = cleaned.replaceAll("\\s{2,}", " ").trim();
-        cleaned = cleaned.replaceAll("[\\s\\-–—]+$", "").trim();
-        return cleaned.isBlank() ? title.trim() : cleaned;
+        cleaned = cleaned.replaceAll("[\\s\\-–—|｜]+$", "").trim();
+        return cleaned.isBlank() ? decoded.trim() : cleaned;
     }
 
     private int rank(Bloom bloom) {
@@ -151,7 +160,10 @@ public class YoutubeService {
     }
 
     private String artwork(JsonNode thumbnails) {
-        for (String size : new String[] {"high", "medium", "default"}) {
+        // Prefer the clean 16:9 sizes (maxres, medium). The 4:3 sizes (high,
+        // default) bake black letterbox bars into the image, which show as strips
+        // when the artwork is cropped to a square. They stay only as a last resort.
+        for (String size : new String[] {"maxres", "medium", "high", "default"}) {
             if (thumbnails.has(size)) {
                 return thumbnails.path(size).path("url").asText("");
             }
