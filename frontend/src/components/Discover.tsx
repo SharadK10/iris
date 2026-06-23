@@ -14,7 +14,9 @@ export default function Discover({
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Bloom[]>([])
-  const [state, setState] = useState<'idle' | 'searching' | 'done' | 'unavailable' | 'error'>('idle')
+  const [state, setState] = useState<
+    'idle' | 'searching' | 'done' | 'unavailable' | 'ratelimited' | 'error'
+  >('idle')
   const requestId = useRef(0)
 
   useEffect(() => {
@@ -36,7 +38,9 @@ export default function Discover({
         })
         .catch((err) => {
           if (id !== requestId.current) return
-          setState(err instanceof ApiError && err.status === 503 ? 'unavailable' : 'error')
+          if (err instanceof ApiError && err.status === 503) setState('unavailable')
+          else if (err instanceof ApiError && err.status === 429) setState('ratelimited')
+          else setState('error')
         })
     }, 350)
 
@@ -78,6 +82,9 @@ export default function Discover({
       {state === 'searching' && <p className="text-sm text-muted">Searching…</p>}
       {state === 'unavailable' && (
         <p className="text-sm text-muted">Search isn’t set up yet — a YouTube API key is needed.</p>
+      )}
+      {state === 'ratelimited' && (
+        <p className="text-sm text-muted">Today’s search limit is reached. Try again later.</p>
       )}
       {state === 'error' && <p className="text-sm text-muted">Search went quiet. Try again.</p>}
       {state === 'done' && results.length === 0 && (
