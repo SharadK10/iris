@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 @Service
 public class YoutubeService {
 
-    private static final int MAX_RESULTS = 12;
+    private static final int MAX_RESULTS = 6;
     private static final String MUSIC_CATEGORY_ID = "10";
 
     // Strips marketing noise from video titles, e.g. "(Official Video)", "[Lyric Video]", "(4K Remaster)".
@@ -87,7 +87,13 @@ public class YoutubeService {
             String channel = snippet.path("channelTitle").asText("");
             String rawTitle = snippet.path("title").asText("");
 
-            String[] parsed = extractArtistAndTitle(channel, rawTitle);
+            // Title cleanup must never fail the search; fall back to the raw fields.
+            String[] parsed;
+            try {
+                parsed = extractArtistAndTitle(channel, rawTitle);
+            } catch (RuntimeException e) {
+                parsed = new String[] {channel.trim(), rawTitle.trim()};
+            }
             results.add(new Bloom(
                     videoId,
                     parsed[1],
