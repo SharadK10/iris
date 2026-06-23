@@ -1,17 +1,19 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { loadYouTubeApi, type YTPlayer } from '../youtube'
 
 const SEEK_THRESHOLD = 2
 
-export default function YouTubePlayer({
-  videoId,
-  playing,
-  positionBase,
-  anchorTime,
-  clockSkew,
-  onEnded,
-  onProgress,
-}: {
+export interface YouTubePlayerHandle {
+  /**
+   * Must be called synchronously from a user gesture (tap/click). iOS WebKit —
+   * which backs every iOS browser including Chrome — only permits audio to start
+   * as the direct result of a user interaction. This "blesses" the player for the
+   * rest of the session so later socket-driven playVideo() calls are allowed.
+   */
+  unlock: () => void
+}
+
+type YouTubePlayerProps = {
   videoId: string
   playing: boolean
   positionBase: number
@@ -19,7 +21,13 @@ export default function YouTubePlayer({
   clockSkew: number
   onEnded: () => void
   onProgress: (current: number, duration: number) => void
-}) {
+  onReady?: () => void
+}
+
+const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(function YouTubePlayer(
+  { videoId, playing, positionBase, anchorTime, clockSkew, onEnded, onProgress, onReady },
+  ref,
+) {
   const hostRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YTPlayer | null>(null)
   const readyRef = useRef(false)
@@ -30,12 +38,31 @@ export default function YouTubePlayer({
   const skewRef = useRef(clockSkew)
   const onEndedRef = useRef(onEnded)
   const onProgressRef = useRef(onProgress)
+  const onReadyRef = useRef(onReady)
   playingRef.current = playing
   baseRef.current = positionBase
   anchorRef.current = anchorTime
   skewRef.current = clockSkew
   onEndedRef.current = onEnded
   onProgressRef.current = onProgress
+  onReadyRef.current = onReady
+
+  useImperativeHandle(ref, () => ({
+    unlock() {
+      const player = playerRef.current
+      if (!readyRef.current || !player) return
+      player.seekTo(targetPosition(), true)
+      if (playingRef.current) {
+        player.playVideo()
+      } else {
+        // Consume the gesture silently so the player is unlocked without a blip.
+        player.mute()
+        player.playVideo()
+        player.pauseVideo()
+        player.unMute()
+      }
+    },
+  }))
 
   function targetPosition() {
     if (!playingRef.current) return baseRef.current
@@ -72,6 +99,7 @@ export default function YouTubePlayer({
             if (!player) return
             player.seekTo(targetPosition(), true)
             if (playingRef.current) player.playVideo()
+            onReadyRef.current?.()
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.ENDED) onEndedRef.current()
@@ -122,4 +150,6 @@ export default function YouTubePlayer({
       <div ref={hostRef} className="h-full w-full" />
     </div>
   )
-}
+})
+
+export default YouTubePlayer

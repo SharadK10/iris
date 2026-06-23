@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public class EchoService {
         }
     }
 
-    public Optional<Echo> leave(String code, String listenerId) {
+    public Optional<LeaveOutcome> leave(String code, String listenerId) {
         String normalized = normalize(code);
         synchronized (lockFor(normalized)) {
             Optional<Echo> found = repository.find(normalized);
@@ -68,9 +69,25 @@ public class EchoService {
                 return Optional.empty();
             }
             Echo echo = found.get();
+            String leaverNickname = nicknameOf(echo, listenerId);
+            boolean wasConductor = listenerId.equals(echo.getConductorId());
             echo.getListeners().removeIf(listener -> listener.id().equals(listenerId));
+
+            boolean conductorChanged = false;
+            if (wasConductor && !echo.getListeners().isEmpty()) {
+                Listener heir = echo.getListeners().stream()
+                        .min(Comparator.comparing(Listener::joinedAt))
+                        .orElseThrow();
+                echo.setConductorId(heir.id());
+                conductorChanged = true;
+            }
+
             repository.save(echo);
-            return Optional.of(echo);
+            return Optional.of(new LeaveOutcome(
+                    echo,
+                    conductorChanged,
+                    leaverNickname,
+                    conductorChanged ? nicknameOf(echo, echo.getConductorId()) : null));
         }
     }
 

@@ -111,9 +111,52 @@ class EchoServiceTest {
         stored("token-1");
         service.join("A4J2KQ", "listener-1", "Sharad", null);
 
-        Echo result = service.leave("A4J2KQ", "listener-1").orElseThrow();
+        Echo result = service.leave("A4J2KQ", "listener-1").orElseThrow().echo();
 
         assertThat(result.getListeners()).isEmpty();
+    }
+
+    @Test
+    void leavingConductorPromotesEarliestRemainingListener() {
+        stored("token-1");
+        service.join("A4J2KQ", "listener-1", "Sharad", "token-1"); // claims the conductor token
+        service.join("A4J2KQ", "listener-2", "Mira", null);
+        service.join("A4J2KQ", "listener-3", "Theo", null);
+
+        LeaveOutcome outcome = service.leave("A4J2KQ", "listener-1").orElseThrow();
+
+        assertThat(outcome.conductorChanged()).isTrue();
+        assertThat(outcome.echo().getConductorId()).isEqualTo("listener-2");
+        assertThat(outcome.newConductorNickname()).isEqualTo("Mira");
+        assertThat(outcome.leaverNickname()).isEqualTo("Sharad");
+    }
+
+    @Test
+    void lastListenerStandingBecomesConductor() {
+        stored("token-1");
+        service.join("A4J2KQ", "listener-1", "Sharad", "token-1");
+        service.join("A4J2KQ", "listener-2", "Mira", null);
+
+        // Conductor leaves: Mira inherits and is now the sole listener.
+        LeaveOutcome promoted = service.leave("A4J2KQ", "listener-1").orElseThrow();
+        assertThat(promoted.echo().getConductorId()).isEqualTo("listener-2");
+
+        // The last person standing leaves: no one to inherit the role.
+        LeaveOutcome lastOut = service.leave("A4J2KQ", "listener-2").orElseThrow();
+        assertThat(lastOut.echo().getListeners()).isEmpty();
+        assertThat(lastOut.conductorChanged()).isFalse();
+    }
+
+    @Test
+    void leavingNonConductorKeepsConductor() {
+        stored("token-1");
+        service.join("A4J2KQ", "listener-1", "Sharad", "token-1");
+        service.join("A4J2KQ", "listener-2", "Mira", null);
+
+        LeaveOutcome outcome = service.leave("A4J2KQ", "listener-2").orElseThrow();
+
+        assertThat(outcome.conductorChanged()).isFalse();
+        assertThat(outcome.echo().getConductorId()).isEqualTo("listener-1");
     }
 
     @Test

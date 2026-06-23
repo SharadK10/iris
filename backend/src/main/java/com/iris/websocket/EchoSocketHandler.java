@@ -92,6 +92,9 @@ public class EchoSocketHandler extends TextWebSocketHandler {
 
     private void handleLeave(WebSocketSession session, String code) {
         removeListener(session, code);
+        // The client navigates away after this; forget the listener so the
+        // imminent disconnect doesn't redundantly re-broadcast a leave.
+        session.getAttributes().remove(LISTENER_ATTRIBUTE);
     }
 
     private void handleAddToGarden(WebSocketSession session, String code, JsonNode payload) {
@@ -166,8 +169,14 @@ public class EchoSocketHandler extends TextWebSocketHandler {
         if (listenerId == null) {
             return;
         }
-        echoService.leave(code, listenerId.toString())
-                .ifPresent(echo -> sessions.broadcast(code, ServerMessage.of(ServerEventType.ECHO_STATE, echo)));
+        echoService.leave(code, listenerId.toString()).ifPresent(outcome -> {
+            sessions.broadcast(code, ServerMessage.of(ServerEventType.ECHO_STATE, outcome.echo()));
+            if (outcome.conductorChanged()) {
+                sessions.broadcast(code, ServerMessage.of(ServerEventType.CONDUCTOR_CHANGED, java.util.Map.of(
+                        "from", outcome.leaverNickname(),
+                        "to", outcome.newConductorNickname())));
+            }
+        });
     }
 
     private String nicknameOf(JoinPayload join) {

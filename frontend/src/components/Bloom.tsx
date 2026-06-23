@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import YouTubePlayer from './YouTubePlayer'
+import { useRef, useState } from 'react'
+import YouTubePlayer, { type YouTubePlayerHandle } from './YouTubePlayer'
 import SectionTitle from './SectionTitle'
 import { PlayIcon, PauseIcon, NextIcon, RestartIcon } from './icons'
 import { formatDuration } from '../format'
@@ -7,6 +7,14 @@ import type { Bloom as BloomTrack } from '../types'
 
 const controlClass =
   'flex items-center justify-center rounded-full border border-line bg-ground text-ink transition hover:border-iris-soft hover:bg-paper-dark'
+
+// iOS browsers (including Chrome) all run WebKit, which blocks programmatic audio
+// playback unless it originates from a user gesture. These users need an explicit
+// tap to unlock the player; everyone else can rely on socket-driven playback.
+const needsUnlock =
+  typeof navigator !== 'undefined' &&
+  (/iP(hone|ad|od)/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1))
 
 export default function Bloom({
   bloom,
@@ -36,6 +44,11 @@ export default function Bloom({
   const [current, setCurrent] = useState(0)
   const [duration, setDuration] = useState(0)
   const [scrub, setScrub] = useState<number | null>(null)
+  const playerRef = useRef<YouTubePlayerHandle>(null)
+  const [playerReady, setPlayerReady] = useState(false)
+  const [unlocked, setUnlocked] = useState(false)
+
+  const showUnlock = needsUnlock && !unlocked && !!bloom
 
   if (!bloom) {
     return (
@@ -64,8 +77,25 @@ export default function Bloom({
   const value = scrub ?? current
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="relative flex flex-col gap-4">
       <SectionTitle>In Bloom</SectionTitle>
+
+      {showUnlock && (
+        <button
+          onClick={() => {
+            playerRef.current?.unlock()
+            setUnlocked(true)
+          }}
+          disabled={!playerReady}
+          className="absolute inset-0 z-10 flex items-center justify-center rounded-bloom bg-ground/85 text-ink backdrop-blur-sm disabled:opacity-70"
+        >
+          <span className="font-serif text-lg italic">
+            {playerReady
+              ? `Tap to ${isConductor ? 'enable sound' : 'join the music'}`
+              : 'Preparing…'}
+          </span>
+        </button>
+      )}
 
       <div className="flex items-center gap-3 sm:gap-4">
         <img
@@ -124,11 +154,13 @@ export default function Bloom({
 
       <div aria-hidden className="pointer-events-none absolute -left-[9999px] top-0 h-[180px] w-[320px]">
         <YouTubePlayer
+          ref={playerRef}
           videoId={bloom.videoId}
           playing={playing}
           positionBase={positionBase}
           anchorTime={anchorTime}
           clockSkew={clockSkew}
+          onReady={() => setPlayerReady(true)}
           onEnded={isConductor ? onNext : () => {}}
           onProgress={(c, d) => {
             setCurrent(c)

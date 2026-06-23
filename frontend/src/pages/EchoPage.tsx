@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getEcho, ApiError } from '../api'
 import { conductorIdFor, getNickname, listenerId, setNickname } from '../session'
 import { useEchoSocket } from '../socket'
@@ -16,6 +16,7 @@ function Divider() {
 
 export default function EchoPage() {
   const { code = '' } = useParams()
+  const navigate = useNavigate()
   const [echo, setEcho] = useState<Echo | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading')
   const [nickname, setNicknameState] = useState(getNickname())
@@ -72,6 +73,11 @@ export default function EchoPage() {
       })
     }
   }, [socketStatus, nickname, code, send])
+
+  function leaveEcho() {
+    send('LEAVE_ECHO', { listenerId: listenerId() })
+    navigate('/')
+  }
 
   async function copyInvite() {
     await navigator.clipboard.writeText(`${window.location.origin}/echo/${code}`)
@@ -139,9 +145,11 @@ export default function EchoPage() {
             {copied ? 'Copied' : 'Copy invite'}
           </button>
           <span>·</span>
-          <span>
-            <span className="text-ink">{nickname}</span>
-          </span>
+          <span className="text-ink">{nickname}</span>
+          <span>·</span>
+          <button onClick={leaveEcho} className="text-muted transition hover:text-iris">
+            Leave
+          </button>
         </div>
       </header>
 
