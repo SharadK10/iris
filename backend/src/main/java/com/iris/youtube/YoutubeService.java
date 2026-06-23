@@ -160,10 +160,11 @@ public class YoutubeService {
     }
 
     private String artwork(JsonNode thumbnails) {
-        // Prefer the clean 16:9 sizes (maxres, medium). The 4:3 sizes (high,
-        // default) bake black letterbox bars into the image, which show as strips
-        // when the artwork is cropped to a square. They stay only as a last resort.
-        for (String size : new String[] {"maxres", "medium", "high", "default"}) {
+        // Prefer "medium" (mqdefault, 320x180): a clean 16:9 image that crops to a
+        // square with no letterbox bars and stays small/fast to load. The 4:3 sizes
+        // (high, default) bake in black bars; "maxres" is clean but heavy, so both
+        // are only fallbacks.
+        for (String size : new String[] {"medium", "maxres", "high", "default"}) {
             if (thumbnails.has(size)) {
                 return thumbnails.path(size).path("url").asText("");
             }
