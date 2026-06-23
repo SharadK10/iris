@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --iris: #6d5ef8;
+  --iris-soft: #a79cff;
+
+  --sunflower: #e0a92e;
+  --sunflower-soft: #f3d68a;
+
+  --ground: #faf7f0;
+  --paper: #fffdf8;
+  --paper-dark: #f4eee2;
+
+  --ink: #2b2722;
+  --muted: #8b8275;
+
+  --line: #e7dfd0;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-ground text-ink font-sans;
+    font-weight: 400;
+  }
+}
