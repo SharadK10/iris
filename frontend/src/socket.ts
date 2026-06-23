@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8199'
 const WS_BASE = BASE_URL.replace(/^http/, 'ws')
 
 const HEARTBEAT_MS = 25000

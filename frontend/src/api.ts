@@ -1,6 +1,6 @@
 import type { Bloom, Echo } from './types'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8199'
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {
