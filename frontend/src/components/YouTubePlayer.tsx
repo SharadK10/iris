@@ -1,7 +1,11 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { loadYouTubeApi, type YTPlayer } from '../youtube'
 
-const SEEK_THRESHOLD = 2
+// Re-sync when the player drifts from the live position by more than this.
+const DRIFT_TOLERANCE = 0.75
+// A fresh seek needs time to buffer before it reaches the target. Don't re-judge
+// drift until it settles, or we thrash — pronounced on iOS, which buffers slower.
+const SETTLE_MS = 1800
 
 export interface YouTubePlayerHandle {
   /**
@@ -31,6 +35,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(functi
   const hostRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YTPlayer | null>(null)
   const readyRef = useRef(false)
+  const lastSeekAtRef = useRef(0)
 
   const playingRef = useRef(playing)
   const baseRef = useRef(positionBase)
@@ -51,7 +56,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(functi
     unlock() {
       const player = playerRef.current
       if (!readyRef.current || !player) return
-      player.seekTo(targetPosition(), true)
+      syncSeek()
       if (playingRef.current) {
         player.playVideo()
       } else {
@@ -70,12 +75,26 @@ const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(functi
     return baseRef.current + Math.max(0, elapsed)
   }
 
+  // Seek to the live position, optionally leading ahead to absorb seek/buffer
+  // latency, and start the settle window so correct() leaves it alone to buffer.
+  function syncSeek(lead = 0) {
+    const player = playerRef.current
+    if (!player) return
+    player.seekTo(targetPosition() + lead, true)
+    lastSeekAtRef.current = Date.now()
+  }
+
   function correct() {
     const player = playerRef.current
     if (!readyRef.current || !player) return
-    const target = targetPosition()
-    if (Math.abs(player.getCurrentTime() - target) > SEEK_THRESHOLD) {
-      player.seekTo(target, true)
+    if (Date.now() - lastSeekAtRef.current < SETTLE_MS) return
+    const drift = targetPosition() - player.getCurrentTime() // +ve => behind live
+    if (Math.abs(drift) > DRIFT_TOLERANCE) {
+      // While playing, lead ahead by the lag: the seek/buffer costs roughly
+      // `drift` seconds and the live position advances by ~the same amount, so
+      // playback lands on the beat. This converges regardless of how slow the
+      // device buffers (iOS Safari/Chrome included), so all listeners agree.
+      syncSeek(playingRef.current ? Math.max(0, drift) : 0)
     }
   }
 
@@ -97,7 +116,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(functi
             readyRef.current = true
             const player = playerRef.current
             if (!player) return
-            player.seekTo(targetPosition(), true)
+            syncSeek()
             if (playingRef.current) player.playVideo()
             onReadyRef.current?.()
           },
@@ -129,6 +148,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(functi
   useEffect(() => {
     if (readyRef.current && playerRef.current && videoId) {
       playerRef.current.loadVideoById(videoId, targetPosition())
+      lastSeekAtRef.current = Date.now()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId])
@@ -136,12 +156,18 @@ const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(functi
   useEffect(() => {
     const player = playerRef.current
     if (!readyRef.current || !player) return
-    if (playing) player.playVideo()
-    else player.pauseVideo()
+    if (playing) {
+      syncSeek()
+      player.playVideo()
+    } else {
+      player.pauseVideo()
+      syncSeek()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing])
 
   useEffect(() => {
-    correct()
+    if (readyRef.current && playerRef.current) syncSeek()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionBase, anchorTime])
 
