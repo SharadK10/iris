@@ -8,5 +8,6 @@ public enum ServerEventType {
     BLOOM_PAUSED,
     BLOOM_CHANGED,
     GARDEN_UPDATED,
-    CONDUCTOR_CHANGED
+    CONDUCTOR_CHANGED,
+    REACTION
 }

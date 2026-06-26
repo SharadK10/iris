@@ -8,7 +8,7 @@ import Bloom from '../components/Bloom'
 import Discover from '../components/Discover'
 import Garden from '../components/Garden'
 import Listeners from '../components/Listeners'
-import type { Echo } from '../types'
+import type { Echo, FloatingReaction } from '../types'
 
 function Divider() {
   return <div className="border-t border-line" />
@@ -23,6 +23,7 @@ export default function EchoPage() {
   const [clockSkew, setClockSkew] = useState(0)
   const [ripple, setRipple] = useState('')
   const [copied, setCopied] = useState(false)
+  const [reactions, setReactions] = useState<FloatingReaction[]>([])
 
   useEffect(() => {
     let active = true
@@ -54,6 +55,14 @@ export default function EchoPage() {
       } else if (message.type === 'CONDUCTOR_CHANGED') {
         const { to } = message.payload as { from: string; to: string }
         setRipple(`${to} became the Gardener`)
+      } else if (message.type === 'REACTION') {
+        const reaction = message.payload as Omit<FloatingReaction, 'x'>
+        const x = 10 + Math.random() * 80
+        setReactions((prev) => [...prev, { ...reaction, x }])
+        // The float animation runs ~2.8s; prune shortly after so the list stays small.
+        setTimeout(() => {
+          setReactions((prev) => prev.filter((item) => item.id !== reaction.id))
+        }, 3000)
       }
     },
   )
@@ -167,10 +176,12 @@ export default function EchoPage() {
         clockSkew={clockSkew}
         isConductor={isConductor}
         canStart={echo.garden.length > 0}
+        reactions={reactions}
         onPlay={() => send('PLAY')}
         onPause={() => send('PAUSE')}
         onNext={() => send('NEXT_BLOOM')}
         onSeek={(seconds) => send('SEEK', { position: seconds })}
+        onReact={(emoji) => send('SEND_REACTION', { emoji })}
       />
 
       <Divider />

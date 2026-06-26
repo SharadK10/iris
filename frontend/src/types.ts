@@ -18,6 +18,16 @@ export interface GardenItem {
   addedBy: string
 }
 
+// Curated palette kept in sync with the server-side allowlist in EchoSocketHandler.
+export const REACTIONS = ['🌻', '🌸', '💜', '❤️', '🔥', '🥹'] as const
+
+export interface FloatingReaction {
+  id: string
+  emoji: string
+  nickname: string
+  x: number
+}
+
 export interface Echo {
   id: string
   code: string

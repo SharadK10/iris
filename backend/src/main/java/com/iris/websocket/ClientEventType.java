@@ -10,5 +10,6 @@ public enum ClientEventType {
     REMOVE_FROM_GARDEN,
     NEXT_BLOOM,
     TRANSFER_CONDUCTOR,
+    SEND_REACTION,
     HEARTBEAT
 }

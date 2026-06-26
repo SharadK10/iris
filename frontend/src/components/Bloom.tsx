@@ -3,7 +3,7 @@ import YouTubePlayer, { type YouTubePlayerHandle } from './YouTubePlayer'
 import SectionTitle from './SectionTitle'
 import { PlayIcon, PauseIcon, NextIcon, RestartIcon } from './icons'
 import { formatDuration } from '../format'
-import type { Bloom as BloomTrack } from '../types'
+import { REACTIONS, type Bloom as BloomTrack, type FloatingReaction } from '../types'
 
 const controlClass =
   'flex items-center justify-center rounded-full border border-line bg-ground text-ink transition hover:border-iris-soft hover:bg-paper-dark'
@@ -24,10 +24,12 @@ export default function Bloom({
   clockSkew,
   isConductor,
   canStart,
+  reactions,
   onPlay,
   onPause,
   onNext,
   onSeek,
+  onReact,
 }: {
   bloom: BloomTrack | null
   playing: boolean
@@ -36,10 +38,12 @@ export default function Bloom({
   clockSkew: number
   isConductor: boolean
   canStart: boolean
+  reactions: FloatingReaction[]
   onPlay: () => void
   onPause: () => void
   onNext: () => void
   onSeek: (seconds: number) => void
+  onReact: (emoji: string) => void
 }) {
   const [current, setCurrent] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -150,6 +154,33 @@ export default function Bloom({
           <span>{formatDuration(Math.floor(value))}</span>
           <span>{formatDuration(max)}</span>
         </div>
+      </div>
+
+      <div className="relative flex items-center justify-center gap-1.5">
+        {/* Reactions float up from just above the bar, like petals lifting off. */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-full h-36">
+          {reactions.map((reaction) => (
+            <span
+              key={reaction.id}
+              className="reaction-rise absolute bottom-0 flex flex-col items-center"
+              style={{ left: `${reaction.x}%`, '--sway': `${(Math.round(reaction.x) % 2 ? 1 : -1) * 8}deg` } as React.CSSProperties}
+            >
+              <span className="text-2xl leading-none">{reaction.emoji}</span>
+              <span className="mt-0.5 max-w-20 truncate text-[10px] text-muted">{reaction.nickname}</span>
+            </span>
+          ))}
+        </div>
+
+        {REACTIONS.map((emoji) => (
+          <button
+            key={emoji}
+            onClick={() => onReact(emoji)}
+            aria-label={`React ${emoji}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ground text-base leading-none transition hover:-translate-y-0.5 hover:border-iris-soft hover:bg-paper-dark active:scale-90"
+          >
+            {emoji}
+          </button>
+        ))}
       </div>
 
       <div aria-hidden className="pointer-events-none absolute -left-[9999px] top-0 h-[180px] w-[320px]">

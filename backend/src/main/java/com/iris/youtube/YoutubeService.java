@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.iris.bloom.Bloom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.HtmlUtils;
 
@@ -13,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 @Service
@@ -20,6 +22,15 @@ public class YoutubeService {
 
     private static final int MAX_RESULTS = 6;
     private static final String MUSIC_CATEGORY_ID = "10";
+
+    // search.list costs 100 quota units each (default cap ~100/day), so cache
+    // results and serve repeats for free. Bounded to keep memory in check.
+    private static final long CACHE_TTL_MS = 60 * 60 * 1000L;
+    private static final int CACHE_MAX = 500;
+    private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
+
+    private record CacheEntry(long expiresAt, List<Bloom> results) {
+    }
 
     // Strips marketing noise from video titles, e.g. "(Official Video)", "[Lyric Video]", "(4K Remaster)".
     private static final Pattern NOISE = Pattern.compile(
@@ -50,6 +61,36 @@ public class YoutubeService {
             return List.of();
         }
 
+        String key = query.trim().toLowerCase();
+        long now = System.currentTimeMillis();
+        CacheEntry cached = cache.get(key);
+        if (cached != null && cached.expiresAt() > now) {
+            return cached.results();
+        }
+
+        List<Bloom> results;
+        try {
+            results = fetch(query);
+        } catch (HttpClientErrorException e) {
+            int code = e.getStatusCode().value();
+            // 429 = rate limited, 403 = daily quota exhausted ("dailyLimitExceeded").
+            if (code == 429 || code == 403) {
+                throw new SearchRateLimitedException();
+            }
+            throw new SearchUnavailableException();
+        }
+
+        cache.put(key, new CacheEntry(now + CACHE_TTL_MS, results));
+        if (cache.size() > CACHE_MAX) {
+            cache.entrySet().removeIf(entry -> entry.getValue().expiresAt() <= now);
+            if (cache.size() > CACHE_MAX) {
+                cache.clear();
+            }
+        }
+        return results;
+    }
+
+    private List<Bloom> fetch(String query) {
         JsonNode search = client.get()
                 .uri(uri -> uri.path("/search")
                         .queryParam("part", "snippet")

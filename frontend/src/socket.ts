@@ -15,6 +15,7 @@ export type ServerEventType =
   | 'BLOOM_CHANGED'
   | 'GARDEN_UPDATED'
   | 'CONDUCTOR_CHANGED'
+  | 'REACTION'
 
 export type ClientEventType =
   | 'JOIN_ECHO'
@@ -26,6 +27,7 @@ export type ClientEventType =
   | 'REMOVE_FROM_GARDEN'
   | 'NEXT_BLOOM'
   | 'TRANSFER_CONDUCTOR'
+  | 'SEND_REACTION'
   | 'HEARTBEAT'
 
 export interface ServerMessage {

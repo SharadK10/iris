@@ -128,6 +128,63 @@ class EchoSocketHandlerTest {
     }
 
     @Test
+    void reactionBroadcastsWhenSongIsInBloom() throws Exception {
+        Echo echo = new Echo("id-1", "TEST07", "token-1");
+        when(repository.find("TEST07")).thenReturn(Optional.of(echo));
+
+        BlockingQueue<String> frames = new LinkedBlockingQueue<>();
+        WebSocketSession session = connect("TEST07", frames);
+        frames.poll(3, TimeUnit.SECONDS); // initial snapshot
+
+        session.sendMessage(new TextMessage(
+                "{\"type\":\"JOIN_ECHO\",\"payload\":" +
+                        "{\"listenerId\":\"L1\",\"nickname\":\"Sharad\",\"conductorToken\":\"token-1\"}}"));
+        frames.poll(3, TimeUnit.SECONDS); // after join
+
+        // A song must be in bloom for reactions to count — promote one first.
+        session.sendMessage(new TextMessage(
+                "{\"type\":\"ADD_TO_GARDEN\",\"payload\":" +
+                        "{\"videoId\":\"vid1\",\"title\":\"Lofi Beats\",\"artist\":\"ChillHop\"," +
+                        "\"thumbnail\":\"t\",\"duration\":200}}"));
+        pollContaining(frames, "Lofi Beats");
+        session.sendMessage(new TextMessage("{\"type\":\"NEXT_BLOOM\",\"payload\":null}"));
+        pollContaining(frames, "currentBloom");
+
+        session.sendMessage(new TextMessage(
+                "{\"type\":\"SEND_REACTION\",\"payload\":{\"emoji\":\"🌻\"}}"));
+
+        String reaction = pollContaining(frames, "REACTION");
+        assertThat(reaction).isNotNull();
+        assertThat(reaction).contains("🌻");
+        assertThat(reaction).contains("Sharad");
+
+        session.close();
+    }
+
+    @Test
+    void reactionWithoutBloomIsIgnored() throws Exception {
+        Echo echo = new Echo("id-1", "TEST08", "token-1");
+        when(repository.find("TEST08")).thenReturn(Optional.of(echo));
+
+        BlockingQueue<String> frames = new LinkedBlockingQueue<>();
+        WebSocketSession session = connect("TEST08", frames);
+        frames.poll(3, TimeUnit.SECONDS); // initial snapshot
+
+        session.sendMessage(new TextMessage(
+                "{\"type\":\"JOIN_ECHO\",\"payload\":{\"listenerId\":\"L1\",\"nickname\":\"Sharad\"}}"));
+        frames.poll(3, TimeUnit.SECONDS); // after join
+
+        // Nothing is in bloom, so the reaction should not be relayed.
+        session.sendMessage(new TextMessage(
+                "{\"type\":\"SEND_REACTION\",\"payload\":{\"emoji\":\"🌻\"}}"));
+
+        String afterReaction = frames.poll(1, TimeUnit.SECONDS);
+        assertThat(afterReaction).isNull();
+
+        session.close();
+    }
+
+    @Test
     void nonConductorPlayIsIgnored() throws Exception {
         Echo echo = new Echo("id-1", "TEST06", "token-1");
         when(repository.find("TEST06")).thenReturn(Optional.of(echo));

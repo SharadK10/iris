@@ -60,6 +60,7 @@ public class EchoSocketHandler extends TextWebSocketHandler {
             }
             case NEXT_BLOOM -> mutateAndBroadcast(code, () -> echoService.nextBloom(code, requesterId(session)));
             case TRANSFER_CONDUCTOR -> handleTransferConductor(session, code, incoming.payload());
+            case SEND_REACTION -> handleReaction(session, code, incoming.payload());
             case HEARTBEAT -> {
                 // Keep-alive only.
             }
@@ -109,6 +110,36 @@ public class EchoSocketHandler extends TextWebSocketHandler {
         try {
             Echo echo = echoService.addToGarden(code, bloom, listenerId.toString());
             sessions.broadcast(code, ServerMessage.of(ServerEventType.ECHO_STATE, echo));
+        } catch (EchoNotFoundException ignored) {
+            // The echo expired; nothing to broadcast.
+        }
+    }
+
+    // A small, curated palette keeps the floating reactions on-theme and blocks
+    // arbitrary payloads from being relayed to every listener.
+    private static final java.util.Set<String> ALLOWED_REACTIONS =
+            java.util.Set.of("🌻", "🌸", "💜", "❤️", "🔥", "🥹");
+
+    private void handleReaction(WebSocketSession session, String code, JsonNode payload) {
+        Object listenerId = session.getAttributes().get(LISTENER_ATTRIBUTE);
+        if (listenerId == null || payload == null) {
+            return;
+        }
+        String emoji = payload.path("emoji").asText("");
+        if (!ALLOWED_REACTIONS.contains(emoji)) {
+            return;
+        }
+        try {
+            Echo echo = echoService.get(code);
+            // Reactions are for the song in bloom; ignore them when nothing is playing.
+            if (echo.getCurrentBloom() == null) {
+                return;
+            }
+            String nickname = echoService.nicknameFor(echo, listenerId.toString());
+            sessions.broadcast(code, ServerMessage.of(ServerEventType.REACTION, java.util.Map.of(
+                    "id", java.util.UUID.randomUUID().toString(),
+                    "emoji", emoji,
+                    "nickname", nickname)));
         } catch (EchoNotFoundException ignored) {
             // The echo expired; nothing to broadcast.
         }

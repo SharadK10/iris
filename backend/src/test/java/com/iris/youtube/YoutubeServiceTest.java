@@ -2,6 +2,7 @@ package com.iris.youtube;
 
 import com.iris.bloom.Bloom;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class YoutubeServiceTest {
@@ -64,6 +66,38 @@ class YoutubeServiceTest {
         assertThat(second.duration()).isEqualTo(3725);
 
         server.verify();
+    }
+
+    @Test
+    void quotaExceededMapsToRateLimited() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(containsString("/search")))
+                .andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS)
+                        .body("{\"error\":{\"code\":429}}")
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        YoutubeService service = new YoutubeService(builder, "test-key", "https://api.test/youtube/v3");
+
+        assertThatThrownBy(() -> service.search("lofi"))
+                .isInstanceOf(SearchRateLimitedException.class);
+    }
+
+    @Test
+    void cachesRepeatedQueriesAcrossCase() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(containsString("/search")))
+                .andRespond(withSuccess(SEARCH_JSON, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(containsString("/videos")))
+                .andRespond(withSuccess(VIDEOS_JSON, MediaType.APPLICATION_JSON));
+
+        YoutubeService service = new YoutubeService(builder, "test-key", "https://api.test/youtube/v3");
+        service.search("lofi");
+        List<Bloom> second = service.search("  LOFI ");
+
+        assertThat(second).hasSize(2);
+        server.verify(); // each endpoint hit exactly once; the repeat came from cache
     }
 
     @Test
