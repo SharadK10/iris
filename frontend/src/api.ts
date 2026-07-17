@@ -1,4 +1,4 @@
-import type { Bloom, Echo } from './types'
+import type { Bloom, Echo, Letter, LetterDraft } from './types'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8199'
 
@@ -29,6 +29,23 @@ export function getEcho(code: string): Promise<Echo> {
 
 export function searchTracks(query: string): Promise<Bloom[]> {
   return request<Bloom[]>(`/api/search?q=${encodeURIComponent(query)}`)
+}
+
+export function createLetter(draft: LetterDraft): Promise<Letter> {
+  return request<Letter>('/api/letters', {
+    method: 'POST',
+    body: JSON.stringify(draft),
+  })
+}
+
+export function getLetter(id: string): Promise<Letter> {
+  return request<Letter>(`/api/letters/${encodeURIComponent(id)}`)
+}
+
+export function openLetter(id: string): Promise<Letter> {
+  return request<Letter>(`/api/letters/${encodeURIComponent(id)}/open`, {
+    method: 'POST',
+  })
 }
 
 export { ApiError }

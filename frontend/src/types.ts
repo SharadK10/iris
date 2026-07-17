@@ -39,3 +39,29 @@ export interface Echo {
   updatedAt: number
   conductorId: string
 }
+
+// A Letter: an async gift carrying a Bouquet of Blooms, each with an optional Note.
+export interface Stem {
+  id: string
+  bloom: Bloom
+  note: string | null
+}
+
+export interface Letter {
+  id: string
+  recipient: string | null // Dear ___
+  sender: string | null // Yours, ___
+  opening: string | null
+  bouquet: Stem[]
+  opened: boolean
+  openedAt: number | null
+  sealedAt: number
+}
+
+// The payload sent when sealing a letter. Blank fields are trimmed to null server-side.
+export interface LetterDraft {
+  recipient: string
+  sender: string
+  opening: string
+  bouquet: { bloom: Bloom; note: string }[]
+}

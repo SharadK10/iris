@@ -8,9 +8,11 @@ import type { Bloom } from '../types'
 export default function Discover({
   onAdd,
   onClose,
+  addLabel = 'Add to Garden',
 }: {
   onAdd: (bloom: Bloom) => void
   onClose?: () => void
+  addLabel?: string
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Bloom[]>([])
@@ -115,8 +117,8 @@ export default function Discover({
               )}
               <button
                 onClick={() => onAdd(track)}
-                aria-label="Add to Garden"
-                title="Add to Garden"
+                aria-label={addLabel}
+                title={addLabel}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-ink transition hover:border-iris-soft hover:bg-paper-dark"
               >
                 <PlusIcon className="h-4 w-4" />

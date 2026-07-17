@@ -80,6 +80,19 @@ export default function Home() {
         {error && <p className="text-sm text-sunflower">{error}</p>}
       </div>
 
+      <div className="flex flex-col items-center gap-3 border-t border-line pt-8">
+        <p className="text-sm text-muted">Not here to listen together?</p>
+        <button
+          onClick={() => navigate('/write')}
+          className="rounded-bloom border border-sunflower-soft px-6 py-2.5 text-ink transition hover:border-sunflower hover:bg-sunflower-soft/20"
+        >
+          Write a letter
+        </button>
+        <p className="max-w-xs text-sm text-muted">
+          A bouquet of songs, sealed and sent to someone.
+        </p>
+      </div>
+
       <p className="font-serif text-lg italic text-muted">
         Different souls, same soundtrack.
       </p>
