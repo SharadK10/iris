@@ -144,6 +144,13 @@ export default function LetterPage() {
   // so the instance blessed by the "Open the letter" tap is the one that plays.
   return (
     <div className="flex flex-col gap-8">
+      <Link
+        to="/"
+        className="mx-auto font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl"
+      >
+        Iris
+      </Link>
+
       {status === 'sealed' || status === 'opening' ? (
         <div className="flex flex-col items-center gap-8 py-4 text-center">
           <p className="font-serif text-lg italic text-muted">
@@ -194,9 +201,9 @@ export default function LetterPage() {
 
           {finished ? (
             <div className="flex flex-col items-center gap-6 py-8 text-center">
-              <p className="font-serif text-2xl italic text-ink">
-                {letter.sender?.trim() ? `Yours, ${letter.sender.trim()}` : 'Yours,'}
-              </p>
+              {letter.sender?.trim() && (
+                <p className="font-serif text-2xl italic text-ink">— {letter.sender.trim()}</p>
+              )}
               <p className="text-sm text-muted">sealed {sealedOn(letter.sealedAt)}</p>
               <button
                 onClick={readAgain}

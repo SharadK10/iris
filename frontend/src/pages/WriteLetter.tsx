@@ -75,6 +75,12 @@ export default function WriteLetter() {
 
   return (
     <div className="flex flex-col gap-10">
+      <Link
+        to="/"
+        className="mx-auto font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl"
+      >
+        Iris
+      </Link>
       <header className="flex flex-col items-center gap-2 text-center">
         <h1 className="font-serif text-4xl font-medium text-ink sm:text-5xl">Write a letter</h1>
         <p className="font-serif text-lg italic text-muted">
@@ -239,6 +245,12 @@ function Sealed({ letter, recipient }: { letter: Letter; recipient: string }) {
 
   return (
     <div className="flex flex-col items-center gap-8 text-center">
+      <Link
+        to="/"
+        className="font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl"
+      >
+        Iris
+      </Link>
       <div className="flex flex-col items-center gap-2">
         <h1 className="font-serif text-4xl font-medium text-ink sm:text-5xl">Sealed.</h1>
         <p className="font-serif text-lg italic text-muted">
