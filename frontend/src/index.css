@@ -108,6 +108,57 @@
   }
 }
 
+@layer components {
+  /* Pill buttons with a springy lift — the one playful touch on controls. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-iris px-7 py-3 font-medium text-on-iris disabled:opacity-60;
+    box-shadow: 0 12px 26px -12px rgb(var(--iris));
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  }
+  .btn-primary:not(:disabled):hover {
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line px-6 py-2.5 text-ink transition hover:border-iris-soft hover:bg-paper-dark/60 disabled:opacity-60;
+  }
+
+  .field {
+    @apply rounded-[14px] border border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-iris-soft focus:outline-none;
+  }
+  /* Handwritten-feeling fields: notes and opening words. */
+  .field-note {
+    @apply rounded-[14px] border border-dashed border-line bg-transparent px-4 py-2.5 font-serif italic text-ink placeholder:text-muted focus:border-iris-soft focus:outline-none;
+  }
+
+  .card {
+    @apply rounded-[18px] border border-line bg-paper/80 p-4 sm:p-5;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 18px 36px -26px rgb(60 50 30 / 0.45);
+  }
+
+  .kicker {
+    @apply inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-gold;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-line px-3 py-1 font-serif text-sm italic text-muted;
+  }
+
+  /* A vine on either side of a short italic line ("Have a code?"), or alone as a rule. */
+  .vine-divider {
+    @apply flex w-full items-center gap-3 font-serif text-sm italic text-muted;
+  }
+  .vine-divider > svg {
+    @apply h-3 min-w-0 flex-1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary {
+    transition: none;
+  }
+}
+
 /* Floating reactions drift up over the In Bloom section like petals on a breeze. */
 @keyframes bloom-rise {
   0% {
