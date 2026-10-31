@@ -1,19 +1,11 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Iris">
-  <!-- A single iris bloom, matching the app palette. -->
-  <g transform="translate(50 54) scale(0.5)">
-    <!-- falls (drooping outer petals) -->
-    <g stroke="#5a4ecf" stroke-width="2" stroke-linejoin="round">
-      <path d="M0 0 C -13 -28 -9 -64 0 -86 C 9 -64 13 -28 0 0 Z" fill="#8b7bff" transform="rotate(158) scale(1.08)" />
-      <path d="M0 0 C -13 -28 -9 -64 0 -86 C 9 -64 13 -28 0 0 Z" fill="#8b7bff" transform="rotate(180) scale(1.08)" />
-      <path d="M0 0 C -13 -28 -9 -64 0 -86 C 9 -64 13 -28 0 0 Z" fill="#8b7bff" transform="rotate(202) scale(1.08)" />
-    </g>
-    <!-- standards (upright inner petals) -->
-    <g stroke="#5a4ecf" stroke-width="2" stroke-linejoin="round">
-      <path d="M0 0 C -13 -28 -9 -64 0 -86 C 9 -64 13 -28 0 0 Z" fill="#a79cff" transform="rotate(-26) scale(0.82)" />
-      <path d="M0 0 C -13 -28 -9 -64 0 -86 C 9 -64 13 -28 0 0 Z" fill="#a79cff" transform="rotate(0) scale(0.82)" />
-      <path d="M0 0 C -13 -28 -9 -64 0 -86 C 9 -64 13 -28 0 0 Z" fill="#a79cff" transform="rotate(26) scale(0.82)" />
-    </g>
-    <!-- beard / signal -->
-    <ellipse cx="0" cy="16" rx="7" ry="14" fill="#e0a92e" />
-  </g>
+<svg viewBox="-100 -100 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Iris">
+  <!-- The Iris mark: an iris seen from above (matches src/components/brand/Logo.tsx). -->
+  <defs>
+    <path id="fall" d="M0 4 C -28 18 -34 62 -2 84 C 0 86 0 86 2 84 C 34 62 28 18 0 4Z" />
+    <path id="standard" d="M0 -2 C -18 -14 -22 -48 0 -70 C 22 -48 18 -14 0 -2Z" />
+    <rect id="beard" x="-4" y="14" width="8" height="30" rx="4" />
+  </defs>
+  <g fill="#5a4ecf"><use href="#fall" /><use href="#fall" transform="rotate(120)" /><use href="#fall" transform="rotate(240)" /></g>
+  <g fill="#a79cff" fill-opacity="0.92"><use href="#standard" /><use href="#standard" transform="rotate(120)" /><use href="#standard" transform="rotate(240)" /></g>
+  <g fill="#e8b23a"><use href="#beard" /><use href="#beard" transform="rotate(120)" /><use href="#beard" transform="rotate(240)" /><circle r="7" /></g>
 </svg>
