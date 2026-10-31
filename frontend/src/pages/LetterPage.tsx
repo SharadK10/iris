@@ -144,12 +144,6 @@ export default function LetterPage() {
   // so the instance blessed by the "Open the letter" tap is the one that plays.
   return (
     <div className="flex flex-col gap-8">
-      <Link
-        to="/"
-        className="mx-auto font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl"
-      >
-        Iris
-      </Link>
 
       {status === 'sealed' || status === 'opening' ? (
         <div className="flex flex-col items-center gap-8 py-4 text-center">

@@ -21,6 +21,7 @@
   --sunflower-soft: 243 214 138;
   --gold-text: 138 98 16;
   --leaf: 140 146 90;
+  --botanical-opacity: 0.9;
 }
 
 /* Dark ("Night Garden"): follows the system unless the visitor picked light. */
@@ -42,6 +43,7 @@
     --sunflower-soft: 243 214 138;
     --gold-text: 243 214 138;
     --leaf: 154 160 102;
+    --botanical-opacity: 0.45;
   }
 }
 
@@ -62,6 +64,35 @@
   --sunflower-soft: 243 214 138;
   --gold-text: 243 214 138;
   --leaf: 154 160 102;
+  --botanical-opacity: 0.45;
+}
+
+/* Day-only and night-only pieces of the canvas. */
+.night-only {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .night-only {
+    display: block;
+  }
+  :root:not([data-theme='light']) .day-only {
+    display: none;
+  }
+  :root:not([data-theme='light']) .footer-logo {
+    filter: brightness(0) invert(0.85);
+  }
+}
+
+:root[data-theme='dark'] .night-only {
+  display: block;
+}
+:root[data-theme='dark'] .day-only {
+  display: none;
+}
+/* The liv2code PNG is dark ink; lift it so it stays legible at night. */
+:root[data-theme='dark'] .footer-logo {
+  filter: brightness(0) invert(0.85);
 }
 
 @layer base {
@@ -187,5 +218,76 @@
   }
   .soft-in {
     animation-duration: 0.3s;
+  }
+}
+
+/* ---- The canvas ---- */
+
+/* Pressed Flowers: paper grain under faint sunflower-gold and iris washes. */
+.canvas-paper {
+  background-image:
+    radial-gradient(circle at 15% 8%, rgb(224 169 46 / 0.12), transparent 40%),
+    radial-gradient(circle at 90% 35%, rgb(109 94 248 / 0.07), transparent 45%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Night Garden: a slow-breathing glow of gold and violet. */
+.canvas-glow {
+  background:
+    radial-gradient(circle at 30% 45%, rgb(231 183 90 / 0.3), transparent 45%),
+    radial-gradient(circle at 70% 40%, rgb(124 91 214 / 0.38), transparent 50%);
+  filter: blur(60px);
+  animation: glow-breathe 7s ease-in-out infinite;
+}
+
+@keyframes glow-breathe {
+  50% {
+    transform: scale(1.08);
+    opacity: 0.6;
+  }
+}
+
+.firefly {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #f3d68a;
+  box-shadow: 0 0 10px 2px #f3d68a;
+  animation: firefly-drift 4s ease-in-out infinite;
+}
+
+@keyframes firefly-drift {
+  50% {
+    opacity: 0.2;
+    transform: translate(6px, -10px);
+  }
+}
+
+.canvas-botanical {
+  opacity: var(--botanical-opacity);
+}
+
+/* Flowers sway from their stems. */
+.sway {
+  transform-origin: 50% 100%;
+  animation: sway 7s ease-in-out infinite;
+}
+
+.sway-late {
+  animation-duration: 8s;
+  animation-delay: -3s;
+}
+
+@keyframes sway {
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-glow,
+  .firefly,
+  .sway {
+    animation: none;
   }
 }

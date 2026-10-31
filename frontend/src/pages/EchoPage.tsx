@@ -138,9 +138,6 @@ export default function EchoPage() {
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
       <header className="flex flex-col items-center gap-2 text-center">
-        <Link to="/" className="font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl">
-          Iris
-        </Link>
         <p className="font-serif text-xl text-muted">Echo {echo.code}</p>
         <p className="flex items-center gap-2 text-sm text-muted">
           <span
