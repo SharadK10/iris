@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f8f3e8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121019" media="(prefers-color-scheme: dark)" />
+    <script>
+      // Apply a saved light/dark choice before first paint (mirrors applyChoice in src/theme/theme.ts).
+      try {
+        var t = localStorage.getItem('iris-theme')
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Iris — Listen, together.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
