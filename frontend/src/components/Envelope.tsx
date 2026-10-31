@@ -51,6 +51,9 @@ export default function Envelope({ name, opening = false }: { name: string; open
         />
       </svg>
 
+      {/* A sunflower tucked under the seal. */}
+      <Sunflower className="pointer-events-none absolute left-1/2 top-[22%] w-8 translate-x-5 rotate-[28deg] sm:w-10" />
+
       {/* Golden wax seal at the flap's point. */}
       <div className="absolute left-1/2 top-[52%] h-14 w-14 -translate-x-1/2 -translate-y-1/2">
         <WaxSeal className="h-full w-full" />

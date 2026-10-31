@@ -423,3 +423,22 @@
     animation: none;
   }
 }
+
+/* ---- Letters ---- */
+
+/* The wax seal breathes until the letter is opened. */
+.seal-pulse {
+  animation: seal-pulse 3s ease-in-out infinite;
+}
+
+@keyframes seal-pulse {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal-pulse {
+    animation: none;
+  }
+}

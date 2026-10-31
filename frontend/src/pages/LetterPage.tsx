@@ -4,6 +4,7 @@ import { getLetter, openLetter, ApiError } from '../api'
 import LetterPlayer, { type LetterPlayerHandle } from '../components/LetterPlayer'
 import Envelope from '../components/Envelope'
 import BloomBurst from '../components/BloomBurst'
+import Leaf from '../components/botanical/Leaf'
 import { PlayIcon, PauseIcon, NextIcon, RestartIcon } from '../components/icons'
 import { formatDuration } from '../format'
 import type { Letter } from '../types'
@@ -11,7 +12,7 @@ import type { Letter } from '../types'
 type Status = 'loading' | 'notfound' | 'error' | 'sealed' | 'opening' | 'reading'
 
 const controlClass =
-  'flex items-center justify-center rounded-full border border-line bg-ground text-ink transition hover:border-sunflower hover:bg-paper-dark disabled:opacity-30 disabled:hover:border-line disabled:hover:bg-ground'
+  'flex items-center justify-center rounded-full border border-line bg-paper text-ink transition hover:border-iris-soft hover:bg-paper-dark disabled:opacity-30 disabled:hover:border-line disabled:hover:bg-paper'
 
 function sealedOn(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, {
@@ -172,11 +173,11 @@ export default function LetterPage() {
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={open}
-                className="rounded-bloom border border-sunflower bg-sunflower-soft/30 px-8 py-3 text-ink transition hover:bg-sunflower-soft/50"
+                className="btn-primary"
               >
                 Open the letter
               </button>
-              <p className="text-xs text-muted">Once opened, it can’t be sealed again.</p>
+              <p className="font-serif text-sm italic text-muted">Once opened, it can’t be sealed again.</p>
             </div>
           )}
         </div>
@@ -198,20 +199,20 @@ export default function LetterPage() {
               {letter.sender?.trim() && (
                 <p className="font-serif text-2xl italic text-ink">— {letter.sender.trim()}</p>
               )}
-              <p className="text-sm text-muted">sealed {sealedOn(letter.sealedAt)}</p>
+              <p className="font-serif text-sm italic text-muted">sealed {sealedOn(letter.sealedAt)}</p>
               <button
                 onClick={readAgain}
-                className="rounded-bloom border border-line px-6 py-2.5 text-ink transition hover:border-sunflower hover:bg-paper-dark"
+                className="btn-ghost"
               >
                 Read again
               </button>
             </div>
           ) : (
-            <section className="flex flex-col items-center gap-6">
+            <section className="card flex flex-col items-center gap-6 py-8">
               <img
                 src={bloom.thumbnail}
                 alt=""
-                className="h-40 w-40 rounded-bloom object-cover shadow-paper sm:h-48 sm:w-48"
+                className="specimen-art h-40 w-40 rounded-md object-cover sm:h-48 sm:w-48"
               />
               <div className="flex flex-col items-center gap-1 text-center">
                 <p className="font-serif text-xl text-ink sm:text-2xl">{bloom.title}</p>
@@ -223,9 +224,11 @@ export default function LetterPage() {
                 {stem.note?.trim() && (
                   <p
                     key={index}
-                    className="note-rise mx-auto max-w-prose whitespace-pre-line text-center font-serif text-lg italic leading-relaxed text-ink"
+                    data-note
+                    className="note-rise mx-auto flex max-w-prose items-start gap-2 whitespace-pre-line text-left font-serif text-lg italic leading-relaxed text-ink"
                   >
-                    {stem.note.trim()}
+                    <Leaf className="mt-2 h-3 w-5 shrink-0" />
+                    <span>{stem.note.trim()}</span>
                   </p>
                 )}
               </div>
@@ -243,7 +246,8 @@ export default function LetterPage() {
                       setScrub(null)
                     }
                   }}
-                  className="h-1 w-full accent-sunflower"
+                  className="stem-range w-full"
+                  style={{ '--progress': `${max ? (Math.min(value, max) / max) * 100 : 0}%` } as React.CSSProperties}
                 />
                 <div className="flex justify-between font-mono text-xs text-muted">
                   <span>{formatDuration(Math.floor(value))}</span>
@@ -276,7 +280,7 @@ export default function LetterPage() {
                 </button>
               </div>
 
-              <p className="font-mono text-xs text-muted">
+              <p className="font-serif text-base italic text-gold">
                 {index + 1} of {total}
               </p>
             </section>
