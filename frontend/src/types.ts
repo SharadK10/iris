@@ -56,6 +56,21 @@ export interface Letter {
   opened: boolean
   openedAt: number | null
   sealedAt: number
+  permanent: boolean // "pressed": paid for, kept forever
+}
+
+// What the server returns to open the Razorpay checkout for pressing a letter.
+export interface Checkout {
+  orderId: string
+  keyId: string
+  amount: number // in paise
+  currency: string
+}
+
+// The configured one-time price to press a letter, for display before checkout.
+export interface PressPrice {
+  amount: number // in the smallest currency unit (paise for INR)
+  currency: string
 }
 
 // The payload sent when sealing a letter. Blank fields are trimmed to null server-side.

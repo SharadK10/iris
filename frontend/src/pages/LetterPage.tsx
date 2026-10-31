@@ -4,6 +4,7 @@ import { getLetter, openLetter, ApiError } from '../api'
 import LetterPlayer, { type LetterPlayerHandle } from '../components/LetterPlayer'
 import Envelope from '../components/Envelope'
 import BloomBurst from '../components/BloomBurst'
+import PressedBadge from '../components/PressedBadge'
 import { PlayIcon, PauseIcon, NextIcon, RestartIcon } from '../components/icons'
 import { formatDuration } from '../format'
 import type { Letter } from '../types'
@@ -14,9 +15,10 @@ const controlClass =
   'flex items-center justify-center rounded-full border border-line bg-ground text-ink transition hover:border-sunflower hover:bg-paper-dark disabled:opacity-30 disabled:hover:border-line disabled:hover:bg-ground'
 
 function sealedOn(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
-    day: 'numeric',
+  // Fixed "Month D, YYYY" style (e.g. August 5, 2026), independent of browser locale.
+  return new Date(ms).toLocaleDateString('en-US', {
     month: 'long',
+    day: 'numeric',
     year: 'numeric',
   })
 }
@@ -188,7 +190,8 @@ export default function LetterPage() {
         </div>
       ) : (
         <div className="soft-in flex flex-col gap-8">
-          <header className="flex flex-col gap-3 text-center">
+          <header className="flex flex-col items-center gap-3 text-center">
+            {letter.permanent && <PressedBadge />}
             <p className="font-serif text-2xl text-ink sm:text-3xl">
               {forName ? `Dear ${forName},` : 'Dear you,'}
             </p>
@@ -204,13 +207,19 @@ export default function LetterPage() {
               {letter.sender?.trim() && (
                 <p className="font-serif text-2xl italic text-ink">— {letter.sender.trim()}</p>
               )}
-              <p className="text-sm text-muted">sealed {sealedOn(letter.sealedAt)}</p>
+              <p className="font-serif text-base italic text-muted">
+                sealed {sealedOn(letter.sealedAt)}
+                {letter.permanent && ' · pressed · kept forever'}
+              </p>
               <button
                 onClick={readAgain}
                 className="rounded-bloom border border-line px-6 py-2.5 text-ink transition hover:border-sunflower hover:bg-paper-dark"
               >
                 Read again
               </button>
+              <Link to="/write" className="text-sm text-muted transition hover:text-ink">
+                Write a letter
+              </Link>
             </div>
           ) : (
             <section className="flex flex-col items-center gap-6">

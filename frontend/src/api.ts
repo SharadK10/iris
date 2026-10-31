@@ -1,4 +1,4 @@
-import type { Bloom, Echo, Letter, LetterDraft } from './types'
+import type { Bloom, Checkout, Echo, Letter, LetterDraft, PressPrice } from './types'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? ""
 
@@ -44,6 +44,18 @@ export function getLetter(id: string): Promise<Letter> {
 
 export function openLetter(id: string): Promise<Letter> {
   return request<Letter>(`/api/letters/${encodeURIComponent(id)}/open`, {
+    method: 'POST',
+  })
+}
+
+// The configured one-time price to press a letter.
+export function getPressPrice(): Promise<PressPrice> {
+  return request<PressPrice>('/api/press/price')
+}
+
+// Starts checkout to press (pay to keep forever) a letter.
+export function pressLetter(id: string): Promise<Checkout> {
+  return request<Checkout>(`/api/letters/${encodeURIComponent(id)}/press`, {
     method: 'POST',
   })
 }

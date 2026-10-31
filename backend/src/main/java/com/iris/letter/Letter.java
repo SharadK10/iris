@@ -17,6 +17,7 @@ public class Letter {
     private boolean opened;
     private Long openedAt;
     private long sealedAt;
+    private boolean permanent;  // "pressed": paid for, kept in the durable store, never expires
 
     public Letter() {
     }
@@ -87,5 +88,13 @@ public class Letter {
 
     public void setSealedAt(long sealedAt) {
         this.sealedAt = sealedAt;
+    }
+
+    public boolean isPermanent() {
+        return permanent;
+    }
+
+    public void setPermanent(boolean permanent) {
+        this.permanent = permanent;
     }
 }

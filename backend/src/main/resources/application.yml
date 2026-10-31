@@ -6,11 +6,32 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6380}
       password: ${REDIS_PASSWORD:}
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/iris}
+    username: ${DATABASE_USER:iris}
+    password: ${DATABASE_PASSWORD:iris}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: ${PORT:8199}
 
 iris:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  # Public base URL, used to build absolute links for social/link previews.
+  public-url: ${PUBLIC_URL:https://iris.liv2code.in}
   youtube:
     api-key: ${YOUTUBE_API_KEY:}
+  # "Pressing" a letter: a one-time payment that makes it permanent.
+  press:
+    amount-paise: ${LETTER_PRESS_AMOUNT_PAISE:4900}
+    currency: ${LETTER_PRESS_CURRENCY:INR}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}

@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { createLetter } from '../api'
+import { createLetter, getLetter, getPressPrice, pressLetter } from '../api'
+import { openCheckout, CheckoutDismissed } from '../razorpay'
 import Discover from '../components/Discover'
+import PressedBadge from '../components/PressedBadge'
 import SectionTitle from '../components/SectionTitle'
-import { formatDuration } from '../format'
-import type { Bloom, Letter } from '../types'
+import { formatDuration, formatPrice } from '../format'
+import type { Bloom, Letter, PressPrice } from '../types'
 
 const MAX_NOTE = 280
 const MAX_BLOOMS = 30
@@ -229,9 +231,37 @@ export default function WriteLetter() {
   )
 }
 
+// After the payment window closes, the webhook promotes the letter server-side.
+// Poll briefly so we only show "pressed" once that has actually landed.
+async function waitForPress(id: string): Promise<boolean> {
+  for (let i = 0; i < 8; i++) {
+    try {
+      const found = await getLetter(id)
+      if (found.permanent) return true
+    } catch {
+      // Ignore transient read errors and keep polling.
+    }
+    await new Promise((r) => setTimeout(r, 1500))
+  }
+  return false
+}
+
+type PressState = 'idle' | 'paying' | 'confirming' | 'pressed' | 'pending'
+
 function Sealed({ letter, recipient }: { letter: Letter; recipient: string }) {
   const [copied, setCopied] = useState(false)
+  const [press, setPress] = useState<PressState>(letter.permanent ? 'pressed' : 'idle')
+  const [pressError, setPressError] = useState('')
+  const [price, setPrice] = useState<PressPrice | null>(null)
   const url = `${window.location.origin}/letter/${letter.id}`
+
+  useEffect(() => {
+    getPressPrice()
+      .then(setPrice)
+      .catch(() => {
+        // Price is a nicety — if it can't load, the button still works.
+      })
+  }, [])
 
   async function copy() {
     try {
@@ -240,6 +270,28 @@ function Sealed({ letter, recipient }: { letter: Letter; recipient: string }) {
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Clipboard blocked — the input below is selectable as a fallback.
+    }
+  }
+
+  async function pressLetterFlow() {
+    setPressError('')
+    setPress('paying')
+    try {
+      const checkout = await pressLetter(letter.id)
+      await openCheckout(checkout, {
+        name: 'Iris',
+        description: 'Press this letter — keep it forever',
+      })
+      setPress('confirming')
+      const done = await waitForPress(letter.id)
+      setPress(done ? 'pressed' : 'pending')
+    } catch (err) {
+      if (err instanceof CheckoutDismissed) {
+        setPress('idle') // User closed the window — no harm, let them try again.
+      } else {
+        setPressError('Could not start the payment. Try again.')
+        setPress('idle')
+      }
     }
   }
 
@@ -277,6 +329,45 @@ function Sealed({ letter, recipient }: { letter: Letter; recipient: string }) {
         <p className="text-xs text-muted">
           The seal only lifts once — let them be the first to open it.
         </p>
+      </div>
+
+      {/* Press the letter — a one-time payment that keeps it forever. */}
+      <div className="flex w-full max-w-md flex-col items-center gap-3 border-t border-line pt-8">
+        {press === 'pressed' ? (
+          <>
+            <PressedBadge />
+            <p className="text-sm text-muted">
+              This letter is kept forever — it will never fade.
+            </p>
+          </>
+        ) : press === 'pending' ? (
+          <>
+            <p className="font-serif text-lg italic text-ink">Payment received.</p>
+            <p className="text-sm text-muted">
+              We’re pressing it now — reopen the letter in a moment to see it kept.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted">
+              Left unpressed, a letter gently fades in time. Press it to keep it forever.
+            </p>
+            {pressError && <p className="text-sm text-sunflower">{pressError}</p>}
+            <button
+              onClick={pressLetterFlow}
+              disabled={press !== 'idle'}
+              className="rounded-bloom border border-sunflower bg-sunflower-soft/30 px-6 py-2.5 text-ink transition hover:bg-sunflower-soft/50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {press === 'paying'
+                ? 'Opening payment…'
+                : press === 'confirming'
+                  ? 'Pressing…'
+                  : price
+                    ? `Press this letter — ${formatPrice(price.amount, price.currency)}`
+                    : 'Press this letter'}
+            </button>
+          </>
+        )}
       </div>
 
       <Link to="/" className="text-sm text-muted transition hover:text-ink">

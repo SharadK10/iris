@@ -26,3 +26,6 @@ frontend/.vite/
 .idea/
 .vscode/
 *.iml
+
+# Redis snapshots
+*.rdb

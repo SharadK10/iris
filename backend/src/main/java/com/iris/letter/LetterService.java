@@ -65,6 +65,23 @@ public class LetterService {
                 .orElseThrow(() -> new LetterNotFoundException(id));
     }
 
+    /**
+     * Promotes a letter to permanent ("pressed"). Idempotent: pressing an
+     * already-pressed letter is a no-op. Called once a press payment is confirmed.
+     */
+    public Letter press(String id) {
+        String normalized = normalize(id);
+        synchronized (lockFor(normalized)) {
+            Letter letter = repository.find(normalized)
+                    .orElseThrow(() -> new LetterNotFoundException(id));
+            if (!letter.isPermanent()) {
+                letter.setPermanent(true);
+                repository.save(letter);
+            }
+            return letter;
+        }
+    }
+
     public Letter open(String id) {
         String normalized = normalize(id);
         synchronized (lockFor(normalized)) {
