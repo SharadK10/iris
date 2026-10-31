@@ -26,3 +26,6 @@ frontend/.vite/
 .idea/
 .vscode/
 *.iml
+
+# Filled-in server settings (deploy/iris.env.example is the template)
+deploy/iris.env
