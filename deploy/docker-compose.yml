@@ -1,6 +1,6 @@
-# Iris on the server (/opt/iris). Redis is private to Iris; the API and web containers also join
-# EaseCampaign's network so its nginx can reach them by name. Image tags come from .env (managed by deploy.sh);
-# app settings and secrets come from iris.env (written by hand, never committed).
+# Iris on the server (/opt/iris). Redis is private to Iris; the API and web app publish ports on 127.0.0.1 only,
+# where the server's nginx reaches them (like EaseCampaign on 8101/8102 and Spine on 8111/8112).
+# Image tags come from .env (managed by deploy.sh); app settings and secrets come from iris.env (never committed).
 name: iris
 
 services:
@@ -32,9 +32,10 @@ services:
       REDIS_PORT: "6379"
     depends_on:
       iris_redis: { condition: service_healthy }
-    networks:
-      iris: {}
-      easecampaign_default: {}
+    networks: [iris]
+    # Server-only: nginx on the host proxies /api and /ws here.
+    ports:
+      - "127.0.0.1:8122:8080"
     healthcheck:
       # Healthy when the API answers; an unknown echo code returns 404.
       test: ["CMD-SHELL", "wget -qS --spider http://127.0.0.1:8080/api/echoes/HEALTH 2>&1 | grep -q ' 404'"]
@@ -48,7 +49,10 @@ services:
     image: ${IRIS_REGISTRY:-ghcr.io/sharadk10}/iris-web:${IRIS_WEB_TAG:-latest}
     container_name: iris_web
     restart: unless-stopped
-    networks: [easecampaign_default]
+    networks: [iris]
+    # Server-only: nginx on the host proxies everything else here.
+    ports:
+      - "127.0.0.1:8121:80"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/"]
       interval: 10s
@@ -62,5 +66,3 @@ volumes:
 
 networks:
   iris:
-  easecampaign_default:
-    external: true

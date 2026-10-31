@@ -29,3 +29,6 @@ frontend/.vite/
 
 # Brainstorm companion
 .superpowers/
+
+# Filled-in server settings (deploy/iris.env.example is the template)
+deploy/iris.env
