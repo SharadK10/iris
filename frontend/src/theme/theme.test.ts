@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { THEME_KEY, applyChoice, readChoice, resolveTheme, writeChoice } from './theme'
 
@@ -72,5 +74,41 @@ describe('applyChoice', () => {
     document.documentElement.dataset.theme = 'light'
     applyChoice('system')
     expect(document.documentElement.dataset.theme).toBeUndefined()
+  })
+})
+
+describe('browser chrome colour', () => {
+  function addMetas() {
+    document.head.innerHTML = `
+      <meta name="theme-color" content="#f8f3e8" media="(prefers-color-scheme: light)">
+      <meta name="theme-color" content="#121019" media="(prefers-color-scheme: dark)">`
+    return [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')]
+  }
+
+  it('follows an explicit choice regardless of the system', () => {
+    const metas = addMetas()
+    applyChoice('dark')
+    expect(metas.map((m) => m.content)).toEqual(['#121019', '#121019'])
+    applyChoice('light')
+    expect(metas.map((m) => m.content)).toEqual(['#f8f3e8', '#f8f3e8'])
+  })
+
+  it('goes back to following the system for system', () => {
+    const metas = addMetas()
+    applyChoice('dark')
+    applyChoice('system')
+    expect(metas.map((m) => m.content)).toEqual(['#f8f3e8', '#121019'])
+  })
+})
+
+describe('pre-paint script', () => {
+  it('index.html applies the saved choice, and the chrome colour, before first paint', () => {
+    const html = readFileSync(join(__dirname, '..', '..', 'index.html'), 'utf8')
+    const head = html.slice(0, html.indexOf('</head>'))
+    const script = head.slice(head.indexOf('<script>'), head.indexOf('</script>'))
+    expect(head.indexOf('<script>')).toBeLessThan(head.indexOf('stylesheet'))
+    expect(script).toContain(`localStorage.getItem('${THEME_KEY}')`)
+    expect(script).toContain('dataset.theme')
+    expect(script).toContain('theme-color')
   })
 })
