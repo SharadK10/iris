@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { createLetter } from '../api'
 import Discover from '../components/Discover'
 import SectionTitle from '../components/SectionTitle'
+import Leaf from '../components/botanical/Leaf'
+import Vine from '../components/botanical/Vine'
 import { formatDuration } from '../format'
 import type { Bloom, Letter } from '../types'
 
@@ -76,14 +78,14 @@ export default function WriteLetter() {
   return (
     <div className="flex flex-col gap-10">
       <header className="flex flex-col items-center gap-2 text-center">
-        <h1 className="font-serif text-4xl font-medium text-ink sm:text-5xl">Write a letter</h1>
+        <h1 className="font-serif text-4xl font-normal text-ink sm:text-5xl">Write a letter</h1>
         <p className="font-serif text-lg italic text-muted">
           A bouquet of songs, sealed and sent to someone.
         </p>
       </header>
 
       {/* The letter itself — salutation, opening, signature */}
-      <section className="flex flex-col gap-4">
+      <section className="card flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row">
           <label className="flex flex-1 flex-col gap-1.5">
             <span className="text-sm text-muted">To</span>
@@ -92,7 +94,7 @@ export default function WriteLetter() {
               onChange={(e) => setRecipient(e.target.value)}
               maxLength={80}
               placeholder="Dear…"
-              className="rounded-bloom border border-line bg-paper-dark px-4 py-2.5 text-ink placeholder:text-muted focus:border-sunflower focus:outline-none"
+              className="field font-serif text-lg placeholder:font-serif"
             />
           </label>
           <label className="flex flex-1 flex-col gap-1.5">
@@ -102,7 +104,7 @@ export default function WriteLetter() {
               onChange={(e) => setSender(e.target.value)}
               maxLength={80}
               placeholder="Yours…"
-              className="rounded-bloom border border-line bg-paper-dark px-4 py-2.5 text-ink placeholder:text-muted focus:border-sunflower focus:outline-none"
+              className="field font-serif text-lg placeholder:font-serif"
             />
           </label>
         </div>
@@ -114,14 +116,17 @@ export default function WriteLetter() {
             maxLength={1000}
             rows={3}
             placeholder="Write something to open with…"
-            className="resize-none rounded-bloom border border-line bg-paper-dark px-4 py-2.5 font-serif text-lg text-ink placeholder:font-sans placeholder:text-base placeholder:text-muted focus:border-sunflower focus:outline-none"
+            className="field-note resize-none text-lg"
           />
         </label>
       </section>
 
       {/* The bouquet — picked blooms, each with an optional note */}
       <section className="flex flex-col gap-4">
-        <SectionTitle>The bouquet</SectionTitle>
+        <div className="flex items-center gap-3">
+          <SectionTitle>The bouquet</SectionTitle>
+          <Vine className="h-3 min-w-0 flex-1" />
+        </div>
         {bouquet.length === 0 ? (
           <p className="text-center font-serif text-lg italic text-muted">
             No blooms picked yet.
@@ -131,10 +136,10 @@ export default function WriteLetter() {
             {bouquet.map((item, index) => (
               <li
                 key={item.key}
-                className="flex flex-col gap-3 rounded-bloom border border-line bg-paper-dark p-3"
+                className="card flex flex-col gap-3 p-3 sm:p-4"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-5 shrink-0 text-center font-mono text-xs text-muted">
+                  <span className="w-5 shrink-0 text-center font-serif text-lg italic text-gold">
                     {index + 1}
                   </span>
                   <img
@@ -178,14 +183,15 @@ export default function WriteLetter() {
                     </button>
                   </div>
                 </div>
-                <div className="relative">
+                <div className="relative flex items-start gap-2">
+                  <Leaf className="mt-3 h-3 w-5 shrink-0" />
                   <textarea
                     value={item.note}
                     onChange={(e) => setNote(item.key, e.target.value)}
                     maxLength={MAX_NOTE}
                     rows={2}
                     placeholder="Leave a note (optional)…"
-                    className="w-full resize-none rounded-bloom border border-line bg-paper px-3 py-2 font-serif text-ink placeholder:font-sans placeholder:text-sm placeholder:text-muted focus:border-sunflower focus:outline-none"
+                    className="field-note w-full resize-none px-3 py-2"
                   />
                   {item.note.length > 0 && (
                     <span className="pointer-events-none absolute bottom-2 right-3 font-mono text-[11px] text-muted">
@@ -206,12 +212,12 @@ export default function WriteLetter() {
       <Discover onAdd={pick} addLabel="Pick this bloom" />
 
       {/* Seal & send */}
-      <div className="flex flex-col items-center gap-3 border-t border-line pt-8">
-        {error && <p className="text-sm text-sunflower">{error}</p>}
+      <div className="flex flex-col items-center gap-3 pt-2">
+        {error && <p className="text-sm text-gold">{error}</p>}
         <button
           onClick={handleSeal}
           disabled={bouquet.length === 0 || sealing}
-          className="rounded-bloom border border-sunflower bg-sunflower-soft/30 px-8 py-3 text-ink transition hover:bg-sunflower-soft/50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-primary w-full max-w-xs disabled:cursor-not-allowed disabled:opacity-50"
         >
           {sealing ? 'Sealing…' : 'Seal & send'}
         </button>
@@ -240,24 +246,24 @@ function Sealed({ letter, recipient }: { letter: Letter; recipient: string }) {
   return (
     <div className="flex flex-col items-center gap-8 text-center">
       <div className="flex flex-col items-center gap-2">
-        <h1 className="font-serif text-4xl font-medium text-ink sm:text-5xl">Sealed.</h1>
+        <h1 className="font-serif text-4xl font-normal text-ink sm:text-5xl">Sealed.</h1>
         <p className="font-serif text-lg italic text-muted">
           {recipient.trim() ? `A letter for ${recipient.trim()}.` : 'Your letter is ready.'}
         </p>
       </div>
 
-      <div className="flex w-full max-w-md flex-col gap-3">
+      <div className="card flex w-full max-w-md flex-col gap-3">
         <p className="text-sm text-muted">Share this link — the letter waits behind it.</p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
             readOnly
             value={url}
             onFocus={(e) => e.target.select()}
-            className="min-w-0 flex-1 rounded-bloom border border-line bg-paper-dark px-4 py-2.5 text-sm text-ink focus:border-sunflower focus:outline-none"
+            className="field min-w-0 flex-1 text-sm"
           />
           <button
             onClick={copy}
-            className="shrink-0 rounded-bloom border border-sunflower bg-sunflower-soft/30 px-5 py-2.5 text-ink transition hover:bg-sunflower-soft/50"
+            className="btn-primary shrink-0 px-5 py-2.5"
           >
             {copied ? 'Copied' : 'Copy link'}
           </button>
