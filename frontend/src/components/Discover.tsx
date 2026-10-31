@@ -50,7 +50,7 @@ export default function Discover({
   }, [query])
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className="card flex flex-col gap-3">
       <div className="relative flex items-center justify-center">
         <SectionTitle>Discover</SectionTitle>
         {onClose && (
@@ -68,7 +68,7 @@ export default function Discover({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search songs, artists, or albums..."
-          className="w-full rounded-bloom border border-line bg-paper-dark px-4 py-2.5 pr-11 text-ink placeholder:text-muted focus:border-iris-soft focus:outline-none"
+          className="field w-full pr-11"
         />
         {query && (
           <button

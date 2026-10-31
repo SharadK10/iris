@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getEcho, ApiError } from '../api'
 import { conductorIdFor, getNickname, listenerId, setNickname } from '../session'
 import { useEchoSocket } from '../socket'
+import Vine from '../components/botanical/Vine'
 import NameGate from '../components/NameGate'
 import Bloom from '../components/Bloom'
 import Discover from '../components/Discover'
@@ -11,7 +12,7 @@ import Listeners from '../components/Listeners'
 import type { Echo, FloatingReaction } from '../types'
 
 function Divider() {
-  return <div className="border-t border-line" />
+  return <Vine className="h-3 w-full" />
 }
 
 export default function EchoPage() {
@@ -138,7 +139,7 @@ export default function EchoPage() {
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
       <header className="flex flex-col items-center gap-2 text-center">
-        <p className="font-serif text-xl text-muted">Echo {echo.code}</p>
+        <p className="chip text-base">Echo {echo.code}</p>
         <p className="flex items-center gap-2 text-sm text-muted">
           <span
             title={socketStatus === 'open' ? 'Connected' : 'Connecting…'}

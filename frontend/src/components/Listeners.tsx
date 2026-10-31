@@ -13,7 +13,7 @@ export default function Listeners({
   onMakeConductor: (listenerId: string) => void
 }) {
   return (
-    <section className="flex flex-col gap-4">
+    <section className="card flex flex-col gap-4">
       <SectionTitle>Listeners</SectionTitle>
       {listeners.length === 0 ? (
         <p className="text-center font-serif text-lg italic text-muted">Quiet for now.</p>

@@ -10,7 +10,7 @@ export default function Garden({
   onRemove: (itemId: string) => void
 }) {
   return (
-    <section className="flex flex-col gap-4">
+    <section className="card flex flex-col gap-4">
       <SectionTitle>Garden</SectionTitle>
       {items.length === 0 ? (
         <p className="text-center font-serif text-lg italic text-muted">Nothing planted yet.</p>
