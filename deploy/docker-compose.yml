@@ -1,0 +1,66 @@
+# Iris on the server (/opt/iris). Redis is private to Iris; the API and web containers also join
+# EaseCampaign's network so its nginx can reach them by name. Image tags come from .env (managed by deploy.sh);
+# app settings and secrets come from iris.env (written by hand, never committed).
+name: iris
+
+services:
+  iris_redis:
+    image: redis:8-alpine
+    container_name: iris_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - iris_redisdata:/data
+    # Host names can't contain "_", so the API reaches Redis as iris-redis.
+    networks:
+      iris:
+        aliases: [iris-redis]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  iris_api:
+    image: ${IRIS_REGISTRY:-ghcr.io/sharadk10}/iris-api:${IRIS_API_TAG:-latest}
+    container_name: iris_api
+    restart: unless-stopped
+    env_file: iris.env
+    environment:
+      PORT: "8080"
+      REDIS_HOST: iris-redis
+      REDIS_PORT: "6379"
+    depends_on:
+      iris_redis: { condition: service_healthy }
+    networks:
+      iris: {}
+      easecampaign_default: {}
+    healthcheck:
+      # Healthy when the API answers; an unknown echo code returns 404.
+      test: ["CMD-SHELL", "wget -qS --spider http://127.0.0.1:8080/api/echoes/HEALTH 2>&1 | grep -q ' 404'"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 6
+    logging: { driver: json-file, options: { max-size: "20m", max-file: "5" } }
+
+  iris_web:
+    image: ${IRIS_REGISTRY:-ghcr.io/sharadk10}/iris-web:${IRIS_WEB_TAG:-latest}
+    container_name: iris_web
+    restart: unless-stopped
+    networks: [easecampaign_default]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 6
+    logging: { driver: json-file, options: { max-size: "20m", max-file: "5" } }
+
+volumes:
+  iris_redisdata:
+
+networks:
+  iris:
+  easecampaign_default:
+    external: true
