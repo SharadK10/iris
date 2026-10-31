@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { createEcho, getEcho, ApiError } from '../api'
 import { rememberConductor } from '../session'
 import Logo from '../components/brand/Logo'
-import Iris from '../components/botanical/Iris'
-import Sunflower from '../components/botanical/Sunflower'
 import Vine from '../components/botanical/Vine'
 
 export default function Home() {
@@ -48,15 +46,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center gap-10 text-center sm:gap-12">
-      <div className="relative flex flex-col items-center gap-3">
-        {/* An iris and a sunflower lean in toward the mark. */}
-        {/* The lean sits on a wrapper: .sway animates transform and would otherwise replace it. */}
-        <div data-lean="iris" className="pointer-events-none absolute -left-24 top-2 w-20 origin-bottom rotate-12 opacity-80 sm:-left-36 sm:w-28">
-          <Iris className="sway w-full" />
-        </div>
-        <div data-lean="sunflower" className="pointer-events-none absolute -right-24 top-0 w-20 origin-bottom -rotate-12 opacity-80 sm:-right-36 sm:w-28">
-          <Sunflower className="sway sway-late w-full" />
-        </div>
+      <div className="flex flex-col items-center gap-3">
         <Logo className="sway h-20 w-20 sm:h-24 sm:w-24" />
         <h1 className="font-serif text-5xl font-normal tracking-tight text-ink sm:text-6xl">Iris</h1>
         <p className="font-serif text-lg italic text-muted sm:text-xl">Listen, together.</p>

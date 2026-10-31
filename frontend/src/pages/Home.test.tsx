@@ -36,16 +36,11 @@ describe('Home', () => {
     expect(screen.getByRole('button', { name: 'Create an Echo' })).toHaveClass('btn-primary')
   })
 
-  it('the hero flowers lean in toward the mark, and sway never overrides the lean', () => {
+  it('keeps the heading clear of illustrated flowers, with only the mark above it', () => {
     const { container } = renderHome()
-    // .sway animates `transform`, so a Tailwind rotation on the same element would be replaced mid-sway.
-    for (const el of container.querySelectorAll('.sway')) {
-      expect(el.getAttribute('class')).not.toMatch(/rotate-/)
-    }
-    const leans = [...container.querySelectorAll('[data-lean]')].map((el) => el.getAttribute('data-lean'))
-    expect(leans).toEqual(['iris', 'sunflower'])
-    // Rotation pivots at the stem, so the left iris leans right (+) and the right sunflower leans left (−).
-    expect(container.querySelector('[data-lean="iris"]')).toHaveClass('rotate-12')
-    expect(container.querySelector('[data-lean="sunflower"]')).toHaveClass('-rotate-12')
+    const hero = screen.getByRole('heading', { name: 'Iris' }).parentElement!
+    expect(hero.querySelectorAll('svg')).toHaveLength(1)
+    expect(hero.querySelector('svg')).toHaveAttribute('aria-label', 'Iris')
+    expect(container.querySelector('[data-lean]')).toBeNull()
   })
 })
