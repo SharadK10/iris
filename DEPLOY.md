@@ -3,9 +3,9 @@
 Iris runs on the Ubuntu server next to EaseCampaign and Spine, at **https://iris.liv2code.in**.
 
 ```
-Cloudflare (public HTTPS) ──► nginx on the server :443 ──┬── /ws/*   ──► iris_api  127.0.0.1:8122 (Java 21, WebSockets)
-                              (systemd)                  ├── /api/*  ──► iris_api  127.0.0.1:8122
-                                                         └── /*      ──► iris_web  127.0.0.1:8121 (static app)
+Cloudflare (public HTTPS) ──► nginx on the server :443 ──┬── /ws/*   ──► iris_api  127.0.0.1:8132 (Java 21, WebSockets)
+                              (systemd)                  ├── /api/*  ──► iris_api  127.0.0.1:8132
+                                                         └── /*      ──► iris_web  127.0.0.1:8131 (static app)
                               iris_redis (private to Iris, no port on the server)
 ```
 
@@ -43,20 +43,17 @@ Iris currently runs under pm2. The containers can start alongside it, and nginx 
 1. Run **Actions → Deploy API → Run workflow**. It copies the Compose file and script to `/opt/iris` and starts Redis and the API.
 2. Run **Actions → Deploy web → Run workflow**.
 3. Check both are healthy: `cd /opt/iris && docker compose ps`.
-4. Find the nginx file that holds the current Iris blocks:
+4. Replace the site's nginx file, `/etc/nginx/sites-enabled/iris.liv2code.in.conf` (the old one serves `/var/www/iris` and proxies to pm2 on 8199), with `deploy/nginx-iris.conf`. Keep the backup **outside** `sites-enabled`: nginx loads every file in that folder, so a copy left there would clash.
    ```bash
-   sudo grep -rln "iris.liv2code.in" /etc/nginx
-   ```
-   In that file, **replace the two existing Iris server blocks** (`# Iris HTTP` and `# Iris HTTPS`, the ones serving `/usr/share/nginx/html/iris` and proxying to `iris_backend`) with the contents of `deploy/nginx-iris.conf`. Keep a copy of the old blocks in case you need to switch back. Leave the `upstream iris_backend { … }` block in place for now. Then:
-   ```bash
+   sudo cp /etc/nginx/sites-enabled/iris.liv2code.in.conf ~/iris.liv2code.in.conf.pm2
+   sudo nano /etc/nginx/sites-enabled/iris.liv2code.in.conf     # paste deploy/nginx-iris.conf over the contents
    sudo nginx -t && sudo systemctl reload nginx
    ```
-   If `nginx -t` reports an error, nothing has changed yet; fix the file (or put the old blocks back) and run it again.
+   If `nginx -t` reports an error, nothing has changed yet; fix the file and run it again. To switch back: `sudo cp ~/iris.liv2code.in.conf.pm2 /etc/nginx/sites-enabled/iris.liv2code.in.conf` and reload.
 5. Open https://iris.liv2code.in, create an Echo, and check that search and playback work.
 6. Retire the old setup once you're happy:
    - Stop the old process: `pm2 stop iris && pm2 delete iris && pm2 save`.
-   - Remove the now-unused `upstream iris_backend { … }` block, then run `sudo nginx -t && sudo systemctl reload nginx` again.
-   - The old static build in `/usr/share/nginx/html/iris` is no longer served and can be deleted.
+   - The old static build in `/var/www/iris` is no longer served and can be deleted.
    - The old pm2 Iris used the host's Redis; the containers use `iris_redis`, so nothing else needs to change.
 
 Echoes and letters live in Redis and expire on their own (letters after 12 hours), so starting with a fresh `iris_redis` only drops whatever is open at the moment of the switch.
@@ -73,7 +70,7 @@ Echoes and letters live in Redis and expire on their own (letters after 12 hours
 
 ## Notes
 - **One API instance only:** Echo rooms and their WebSockets are held in the API's memory.
-- **Ports:** `iris_web` and `iris_api` listen on `127.0.0.1:8121` and `127.0.0.1:8122` only, so they're reachable from the server's nginx but not the internet. EaseCampaign uses 8101/8102 and Spine 8111/8112.
-- **Certificate:** Iris uses `origin.crt`, which works because Cloudflare's SSL mode for liv2code.in is "Full".
+- **Ports:** `iris_web` and `iris_api` listen on `127.0.0.1:8131` and `127.0.0.1:8132` only, so they're reachable from the server's nginx but not the internet. EaseCampaign uses 8101/8102, Spine 8111/8112 and Bitti 8121.
+- **nginx:** sites live in `/etc/nginx/sites-enabled/<domain>.conf` and share `snippets/ssl-origin.conf` (Cloudflare origin certificate) and `snippets/proxy.conf` (proxy and WebSocket headers). `/opt/easecampaign/nginx/` is left over from an old Docker nginx and isn't used.
 - **Independent of EaseCampaign:** Iris's containers only use their own Docker network, so they keep running whatever happens to the other apps.
 - **Pressed letters** (on `feature/pressed-letters`) add Postgres. When that merges, add an `iris_postgres` service, its settings in `iris.env`, and a pre-deploy backup, as in Spine's `deploy/`.
