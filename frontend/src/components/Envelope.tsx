@@ -13,7 +13,7 @@ export default function Envelope({ name, opening = false }: { name: string; open
       className={`relative aspect-[3/2] w-full overflow-hidden rounded-canvas border border-line bg-paper shadow-paper ${
         opening ? 'envelope-open' : ''
       }`}
-      style={{ backgroundImage: 'linear-gradient(160deg, var(--paper) 0%, var(--paper-dark) 100%)' }}
+      style={{ backgroundImage: 'linear-gradient(160deg, rgb(var(--paper)) 0%, rgb(var(--paper-dark)) 100%)' }}
     >
       {/* Flowers watermarked into the lower corners. */}
       <Sunflower
@@ -37,15 +37,15 @@ export default function Envelope({ name, opening = false }: { name: string; open
       >
         <path
           d="M0 0 L300 0 L150 104 Z"
-          fill="var(--paper-dark)"
-          stroke="var(--line)"
+          fill="rgb(var(--paper-dark))"
+          stroke="rgb(var(--line))"
           strokeWidth="1.5"
         />
-        <path d="M0 0 L300 0 L150 104 Z" fill="none" stroke="var(--sunflower-soft)" strokeWidth="0.75" strokeOpacity="0.6" />
+        <path d="M0 0 L300 0 L150 104 Z" fill="none" stroke="rgb(var(--sunflower-soft))" strokeWidth="0.75" strokeOpacity="0.6" />
         <path
           d="M0 200 L150 100 L300 200"
           fill="none"
-          stroke="var(--line)"
+          stroke="rgb(var(--line))"
           strokeWidth="1"
           strokeOpacity="0.55"
         />

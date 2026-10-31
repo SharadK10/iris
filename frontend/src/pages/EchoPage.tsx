@@ -102,7 +102,7 @@ export default function EchoPage() {
     return (
       <div className="flex flex-col items-center gap-4 pt-8 text-center">
         <p className="font-serif text-xl italic text-muted">No echo with code {code}.</p>
-        <Link to="/" className="text-sm text-iris">
+        <Link to="/" className="text-sm text-iris-text">
           Back home
         </Link>
       </div>
@@ -113,7 +113,7 @@ export default function EchoPage() {
     return (
       <div className="flex flex-col items-center gap-4 pt-8 text-center">
         <p className="font-serif text-xl italic text-muted">Something went quiet. Try again.</p>
-        <Link to="/" className="text-sm text-iris">
+        <Link to="/" className="text-sm text-iris-text">
           Back home
         </Link>
       </div>
@@ -150,20 +150,20 @@ export default function EchoPage() {
           {count} {count === 1 ? 'listener' : 'listeners'} present
         </p>
         <div className="flex items-center gap-2 text-sm text-muted">
-          <button onClick={copyInvite} className="text-iris transition hover:opacity-70">
+          <button onClick={copyInvite} className="text-iris-text transition hover:opacity-70">
             {copied ? 'Copied' : 'Copy invite'}
           </button>
           <span>·</span>
           <span className="text-ink">{nickname}</span>
           <span>·</span>
-          <button onClick={leaveEcho} className="text-muted transition hover:text-iris">
+          <button onClick={leaveEcho} className="text-muted transition hover:text-iris-text">
             Leave
           </button>
         </div>
       </header>
 
       {ripple && (
-        <p className="text-center font-serif text-base italic text-iris">{ripple}</p>
+        <p className="text-center font-serif text-base italic text-iris-text">{ripple}</p>
       )}
 
       <Divider />

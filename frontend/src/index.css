@@ -3,20 +3,65 @@
 @tailwind utilities;
 
 :root {
-  --iris: #6d5ef8;
-  --iris-soft: #a79cff;
+  /* Colour tokens are RGB channels so Tailwind opacity modifiers work. */
+  color-scheme: light;
+  --ground: 248 243 232;
+  --paper: 255 253 248;
+  --paper-dark: 244 238 226;
+  --ink: 43 39 34;
+  /* decorative muted; small text uses --muted-text */
+  --muted: 139 130 117;
+  --muted-text: 111 103 92;
+  --line: 226 216 196;
+  --iris: 109 94 248;
+  --iris-soft: 167 156 255;
+  --iris-text: 91 76 230;
+  --on-iris: 255 255 255;
+  --sunflower: 224 169 46;
+  --sunflower-soft: 243 214 138;
+  --gold-text: 138 98 16;
+  --leaf: 140 146 90;
+}
 
-  --sunflower: #e0a92e;
-  --sunflower-soft: #f3d68a;
+/* Dark ("Night Garden"): follows the system unless the visitor picked light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ground: 18 16 25;
+    --paper: 29 25 40;
+    --paper-dark: 38 33 52;
+    --ink: 240 234 223;
+    --muted: 166 157 178;
+    --muted-text: 166 157 178;
+    --line: 41 39 48;
+    --iris: 167 156 255;
+    --iris-soft: 196 188 255;
+    --iris-text: 167 156 255;
+    --on-iris: 23 19 31;
+    --sunflower: 224 169 46;
+    --sunflower-soft: 243 214 138;
+    --gold-text: 243 214 138;
+    --leaf: 154 160 102;
+  }
+}
 
-  --ground: #faf7f0;
-  --paper: #fffdf8;
-  --paper-dark: #f4eee2;
-
-  --ink: #2b2722;
-  --muted: #8b8275;
-
-  --line: #e7dfd0;
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: 18 16 25;
+  --paper: 29 25 40;
+  --paper-dark: 38 33 52;
+  --ink: 240 234 223;
+  --muted: 166 157 178;
+  --muted-text: 166 157 178;
+  --line: 41 39 48;
+  --iris: 167 156 255;
+  --iris-soft: 196 188 255;
+  --iris-text: 167 156 255;
+  --on-iris: 23 19 31;
+  --sunflower: 224 169 46;
+  --sunflower-soft: 243 214 138;
+  --gold-text: 243 214 138;
+  --leaf: 154 160 102;
 }
 
 @layer base {

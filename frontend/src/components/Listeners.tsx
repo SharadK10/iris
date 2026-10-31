@@ -28,12 +28,12 @@ export default function Listeners({
               >
                 <span className="text-ink">
                   {listener.nickname}
-                  {isConductor && <span className="text-iris"> (Gardener)</span>}
+                  {isConductor && <span className="text-iris-text"> (Gardener)</span>}
                 </span>
                 {amConductor && !isConductor && (
                   <button
                     onClick={() => onMakeConductor(listener.id)}
-                    className="text-xs text-muted opacity-0 transition hover:text-iris group-hover:opacity-100"
+                    className="text-xs text-muted opacity-0 transition hover:text-iris-text group-hover:opacity-100"
                   >
                     Pass the Garden
                   </button>

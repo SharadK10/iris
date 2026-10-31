@@ -1,3 +1,6 @@
+/** CSS variables hold RGB channels, so opacity modifiers (`bg-line/70`) work. */
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -5,25 +8,33 @@ export default {
     extend: {
       colors: {
         iris: {
-          DEFAULT: 'var(--iris)',
-          soft: 'var(--iris-soft)',
+          DEFAULT: token('iris'),
+          soft: token('iris-soft'),
+          text: token('iris-text'),
         },
+        'on-iris': token('on-iris'),
         sunflower: {
-          DEFAULT: 'var(--sunflower)',
-          soft: 'var(--sunflower-soft)',
+          DEFAULT: token('sunflower'),
+          soft: token('sunflower-soft'),
         },
-        ground: 'var(--ground)',
+        ground: token('ground'),
         paper: {
-          DEFAULT: 'var(--paper)',
-          dark: 'var(--paper-dark)',
+          DEFAULT: token('paper'),
+          dark: token('paper-dark'),
         },
-        ink: 'var(--ink)',
-        muted: 'var(--muted)',
-        line: 'var(--line)',
+        ink: token('ink'),
+        // Text-safe (AA) muted and gold; the softer muted is for decoration only.
+        muted: {
+          DEFAULT: token('muted-text'),
+          soft: token('muted'),
+        },
+        gold: token('gold-text'),
+        leaf: token('leaf'),
+        line: token('line'),
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        serif: ['Fraunces', 'Georgia', 'serif'],
       },
       maxWidth: {
         canvas: '820px',
