@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createEcho, getEcho, ApiError } from '../api'
 import { rememberConductor } from '../session'
+import Logo from '../components/brand/Logo'
+import Iris from '../components/botanical/Iris'
+import Sunflower from '../components/botanical/Sunflower'
+import Vine from '../components/botanical/Vine'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -43,49 +47,51 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-10 text-center sm:gap-14">
-      <div className="flex flex-col items-center gap-3">
-        <h1 className="font-serif text-5xl font-medium tracking-tight text-ink sm:text-6xl">Iris</h1>
+    <div className="flex flex-col items-center gap-10 text-center sm:gap-12">
+      <div className="relative flex flex-col items-center gap-3">
+        {/* An iris and a sunflower lean in toward the mark. */}
+        {/* The lean sits on a wrapper: .sway animates transform and would otherwise replace it. */}
+        <div data-lean="iris" className="pointer-events-none absolute -left-24 top-2 w-20 origin-bottom rotate-12 opacity-80 sm:-left-36 sm:w-28">
+          <Iris className="sway w-full" />
+        </div>
+        <div data-lean="sunflower" className="pointer-events-none absolute -right-24 top-0 w-20 origin-bottom -rotate-12 opacity-80 sm:-right-36 sm:w-28">
+          <Sunflower className="sway sway-late w-full" />
+        </div>
+        <Logo className="sway h-20 w-20 sm:h-24 sm:w-24" />
+        <h1 className="font-serif text-5xl font-normal tracking-tight text-ink sm:text-6xl">Iris</h1>
         <p className="font-serif text-lg italic text-muted sm:text-xl">Listen, together.</p>
       </div>
 
-      <div className="flex flex-col items-center gap-6">
-        <button
-          onClick={handleCreate}
-          disabled={creating}
-          className="rounded-bloom border border-line px-8 py-3 text-ink transition hover:border-iris-soft hover:bg-paper-dark disabled:opacity-60"
-        >
+      <div className="flex w-full max-w-sm flex-col items-center gap-6">
+        <button onClick={handleCreate} disabled={creating} className="btn-primary w-full">
           {creating ? 'Creating…' : 'Create an Echo'}
         </button>
 
-        <form onSubmit={handleJoin} className="flex flex-col items-center gap-3">
-          <p className="text-sm text-muted">Have a code?</p>
-          <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row">
+        <form onSubmit={handleJoin} className="flex w-full flex-col items-center gap-4">
+          <p className="vine-divider">
+            <Vine />
+            Have a code?
+            <Vine className="-scale-x-100" />
+          </p>
+          <div className="flex w-full flex-col items-center gap-2 sm:flex-row">
             <input
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Enter code"
-              className="w-full rounded-bloom border border-line bg-paper-dark px-4 py-2 text-center uppercase tracking-widest text-ink placeholder:normal-case placeholder:tracking-normal placeholder:text-muted focus:border-iris-soft focus:outline-none sm:w-40"
+              className="field w-full text-center uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal sm:flex-1"
             />
-            <button
-              type="submit"
-              disabled={joining}
-              className="w-full rounded-bloom border border-line px-4 py-2 text-ink transition hover:border-iris-soft hover:bg-paper-dark disabled:opacity-60 sm:w-auto"
-            >
+            <button type="submit" disabled={joining} className="btn-ghost w-full sm:w-auto">
               {joining ? 'Joining…' : 'Join an Echo'}
             </button>
           </div>
         </form>
 
-        {error && <p className="text-sm text-sunflower">{error}</p>}
+        {error && <p className="text-sm text-gold">{error}</p>}
       </div>
 
-      <div className="flex flex-col items-center gap-3 border-t border-line pt-8">
+      <div className="card flex w-full max-w-sm flex-col items-center gap-3">
         <p className="text-sm text-muted">Not here to listen together?</p>
-        <button
-          onClick={() => navigate('/write')}
-          className="rounded-bloom border border-sunflower-soft px-6 py-2.5 text-ink transition hover:border-sunflower hover:bg-sunflower-soft/20"
-        >
+        <button onClick={() => navigate('/write')} className="btn-ghost border-sunflower-soft hover:border-sunflower">
           Write a letter
         </button>
         <p className="max-w-xs text-sm text-muted">

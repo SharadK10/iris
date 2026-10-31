@@ -12,7 +12,7 @@ type Piece = {
   color: string
 }
 
-const PETAL_COLORS = ['var(--iris-soft)', 'var(--sunflower-soft)', 'var(--sunflower)', 'var(--iris)']
+const PETAL_COLORS = ['rgb(var(--iris-soft))', 'rgb(var(--sunflower-soft))', 'rgb(var(--sunflower))', 'rgb(var(--iris))']
 
 // A fan of blooms spilling upward and outward from the seal. Precomputed so the
 // spread is deterministic (no per-render randomness).

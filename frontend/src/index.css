@@ -3,20 +3,96 @@
 @tailwind utilities;
 
 :root {
-  --iris: #6d5ef8;
-  --iris-soft: #a79cff;
+  /* Colour tokens are RGB channels so Tailwind opacity modifiers work. */
+  color-scheme: light;
+  --ground: 248 243 232;
+  --paper: 255 253 248;
+  --paper-dark: 244 238 226;
+  --ink: 43 39 34;
+  /* decorative muted; small text uses --muted-text */
+  --muted: 139 130 117;
+  --muted-text: 111 103 92;
+  --line: 226 216 196;
+  --iris: 109 94 248;
+  --iris-soft: 167 156 255;
+  --iris-text: 91 76 230;
+  --on-iris: 255 255 255;
+  --sunflower: 224 169 46;
+  --sunflower-soft: 243 214 138;
+  --gold-text: 138 98 16;
+  --leaf: 140 146 90;
+  --botanical-opacity: 0.9;
+}
 
-  --sunflower: #e0a92e;
-  --sunflower-soft: #f3d68a;
+/* Dark ("Night Garden"): follows the system unless the visitor picked light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ground: 18 16 25;
+    --paper: 29 25 40;
+    --paper-dark: 38 33 52;
+    --ink: 240 234 223;
+    --muted: 166 157 178;
+    --muted-text: 166 157 178;
+    --line: 41 39 48;
+    --iris: 167 156 255;
+    --iris-soft: 196 188 255;
+    --iris-text: 167 156 255;
+    --on-iris: 23 19 31;
+    --sunflower: 224 169 46;
+    --sunflower-soft: 243 214 138;
+    --gold-text: 243 214 138;
+    --leaf: 154 160 102;
+    --botanical-opacity: 0.45;
+  }
+}
 
-  --ground: #faf7f0;
-  --paper: #fffdf8;
-  --paper-dark: #f4eee2;
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: 18 16 25;
+  --paper: 29 25 40;
+  --paper-dark: 38 33 52;
+  --ink: 240 234 223;
+  --muted: 166 157 178;
+  --muted-text: 166 157 178;
+  --line: 41 39 48;
+  --iris: 167 156 255;
+  --iris-soft: 196 188 255;
+  --iris-text: 167 156 255;
+  --on-iris: 23 19 31;
+  --sunflower: 224 169 46;
+  --sunflower-soft: 243 214 138;
+  --gold-text: 243 214 138;
+  --leaf: 154 160 102;
+  --botanical-opacity: 0.45;
+}
 
-  --ink: #2b2722;
-  --muted: #8b8275;
+/* Day-only and night-only pieces of the canvas. */
+.night-only {
+  display: none;
+}
 
-  --line: #e7dfd0;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .night-only {
+    display: block;
+  }
+  :root:not([data-theme='light']) .day-only {
+    display: none;
+  }
+  :root:not([data-theme='light']) .footer-logo {
+    filter: brightness(0) invert(0.85);
+  }
+}
+
+:root[data-theme='dark'] .night-only {
+  display: block;
+}
+:root[data-theme='dark'] .day-only {
+  display: none;
+}
+/* The liv2code PNG is dark ink; lift it so it stays legible at night. */
+:root[data-theme='dark'] .footer-logo {
+  filter: brightness(0) invert(0.85);
 }
 
 @layer base {
@@ -29,6 +105,57 @@
   body {
     @apply bg-ground text-ink font-sans;
     font-weight: 400;
+  }
+}
+
+@layer components {
+  /* Pill buttons with a springy lift — the one playful touch on controls. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-iris px-7 py-3 font-medium text-on-iris disabled:opacity-60;
+    box-shadow: 0 12px 26px -12px rgb(var(--iris));
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  }
+  .btn-primary:not(:disabled):hover {
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line px-6 py-2.5 text-ink transition hover:border-iris-soft hover:bg-paper-dark/60 disabled:opacity-60;
+  }
+
+  .field {
+    @apply rounded-[14px] border border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-iris-soft focus:outline-none;
+  }
+  /* Handwritten-feeling fields: notes and opening words. */
+  .field-note {
+    @apply rounded-[14px] border border-dashed border-line bg-transparent px-4 py-2.5 font-serif italic text-ink placeholder:text-muted focus:border-iris-soft focus:outline-none;
+  }
+
+  .card {
+    @apply rounded-[18px] border border-line bg-paper/80 p-4 sm:p-5;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 18px 36px -26px rgb(60 50 30 / 0.45);
+  }
+
+  .kicker {
+    @apply inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-gold;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-line px-3 py-1 font-serif text-sm italic text-muted;
+  }
+
+  /* A vine on either side of a short italic line ("Have a code?"), or alone as a rule. */
+  .vine-divider {
+    @apply flex w-full items-center gap-3 font-serif text-sm italic text-muted;
+  }
+  .vine-divider > svg {
+    @apply h-3 min-w-0 flex-1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary {
+    transition: none;
   }
 }
 
@@ -142,5 +269,176 @@
   }
   .soft-in {
     animation-duration: 0.3s;
+  }
+}
+
+/* ---- The canvas ---- */
+
+/* Pressed Flowers: paper grain under faint sunflower-gold and iris washes. */
+.canvas-paper {
+  background-image:
+    radial-gradient(circle at 15% 8%, rgb(224 169 46 / 0.12), transparent 40%),
+    radial-gradient(circle at 90% 35%, rgb(109 94 248 / 0.07), transparent 45%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Night Garden: a slow-breathing glow of gold and violet. */
+.canvas-glow {
+  background:
+    radial-gradient(circle at 30% 45%, rgb(231 183 90 / 0.3), transparent 45%),
+    radial-gradient(circle at 70% 40%, rgb(124 91 214 / 0.38), transparent 50%);
+  filter: blur(60px);
+  animation: glow-breathe 7s ease-in-out infinite;
+}
+
+@keyframes glow-breathe {
+  50% {
+    transform: scale(1.08);
+    opacity: 0.6;
+  }
+}
+
+.firefly {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #f3d68a;
+  box-shadow: 0 0 10px 2px #f3d68a;
+  animation: firefly-drift 4s ease-in-out infinite;
+}
+
+@keyframes firefly-drift {
+  50% {
+    opacity: 0.2;
+    transform: translate(6px, -10px);
+  }
+}
+
+.canvas-botanical {
+  opacity: var(--botanical-opacity);
+}
+
+/* Flowers sway from their stems. */
+.sway {
+  transform-origin: 50% 100%;
+  animation: sway 7s ease-in-out infinite;
+}
+
+.sway-late {
+  animation-duration: 8s;
+  animation-delay: -3s;
+}
+
+@keyframes sway {
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-glow,
+  .firefly,
+  .sway {
+    animation: none;
+  }
+}
+
+/* ---- Echo room ---- */
+
+/* The Bloom's artwork, pressed like a specimen by day and glowing by night. */
+.specimen-art {
+  box-shadow:
+    0 0 0 5px rgb(var(--paper)),
+    0 0 0 6px rgb(var(--line)),
+    0 14px 24px -14px rgb(60 50 30 / 0.5);
+  transform: rotate(-2deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .specimen-art {
+    box-shadow:
+      0 0 40px -4px rgb(231 183 90 / 0.45),
+      0 14px 30px -14px rgb(0 0 0 / 0.7);
+    transform: none;
+  }
+}
+
+:root[data-theme='dark'] .specimen-art {
+  box-shadow:
+    0 0 40px -4px rgb(231 183 90 / 0.45),
+    0 14px 30px -14px rgb(0 0 0 / 0.7);
+  transform: none;
+}
+
+/* Progress as a stem: leaf-green where it has grown, a sunflower head as the playhead. */
+.stem-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  background: transparent;
+}
+.stem-range::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    rgb(var(--leaf)) var(--progress, 0%),
+    rgb(var(--line)) var(--progress, 0%)
+  );
+}
+.stem-range::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: rgb(var(--line));
+}
+.stem-range::-moz-range-progress {
+  height: 2px;
+  border-radius: 2px;
+  background: rgb(var(--leaf));
+}
+.stem-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -10px;
+  border: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='40 36 120 120'%3E%3Cg fill='%23f1cc63' stroke='%23cf9f3c' stroke-width='2'%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(0 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(20 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(40 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(60 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(80 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(100 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(120 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(140 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(160 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(180 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(200 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(220 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(240 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(260 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(280 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(300 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(320 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(340 100 96)'/%3E%3C/g%3E%3Ccircle cx='100' cy='96' r='31' fill='%23b77a3a' stroke='%238a5a2b' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: playhead-turn 14s linear infinite;
+}
+.stem-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='40 36 120 120'%3E%3Cg fill='%23f1cc63' stroke='%23cf9f3c' stroke-width='2'%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(0 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(20 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(40 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(60 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(80 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(100 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(120 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(140 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(160 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(180 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(200 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(220 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(240 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(260 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(280 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(300 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(320 100 96)'/%3E%3Cellipse cx='100' cy='46' rx='8.5' ry='27' transform='rotate(340 100 96)'/%3E%3C/g%3E%3Ccircle cx='100' cy='96' r='31' fill='%23b77a3a' stroke='%238a5a2b' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+@keyframes playhead-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stem-range::-webkit-slider-thumb {
+    animation: none;
+  }
+}
+
+/* ---- Letters ---- */
+
+/* The wax seal breathes until the letter is opened. */
+.seal-pulse {
+  animation: seal-pulse 3s ease-in-out infinite;
+}
+
+@keyframes seal-pulse {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal-pulse {
+    animation: none;
   }
 }

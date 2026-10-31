@@ -1,9 +1,9 @@
 // A broad "fall" petal (droops down and out) and a slimmer upright "standard".
-const FALL =
+export const FALL =
   'M0 -4 C -11 6 -26 22 -24 47 C -23 67 -13 80 -4 91 C -1 94 1 94 4 91 C 13 80 23 67 24 47 C 26 22 11 6 0 -4 Z'
-const STANDARD =
+export const STANDARD =
   'M0 -6 C -13 -15 -19 -34 -14 -55 C -10 -70 -4 -77 0 -81 C 4 -77 10 -70 14 -55 C 19 -34 13 -15 0 -6 Z'
-const VEIN = 'M0 6 C 2 32 1 60 0 86'
+export const VEIN = 'M0 6 C 2 32 1 60 0 86'
 
 export default function Iris({ className }: { className?: string }) {
   const falls = [-58, 0, 58]

@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import YouTubePlayer, { type YouTubePlayerHandle } from './YouTubePlayer'
 import SectionTitle from './SectionTitle'
+import Sunflower from './botanical/Sunflower'
 import { PlayIcon, PauseIcon, NextIcon, RestartIcon } from './icons'
 import { formatDuration } from '../format'
 import { REACTIONS, type Bloom as BloomTrack, type FloatingReaction } from '../types'
 
 const controlClass =
-  'flex items-center justify-center rounded-full border border-line bg-ground text-ink transition hover:border-iris-soft hover:bg-paper-dark'
+  'flex items-center justify-center rounded-full border border-line bg-paper text-ink transition hover:border-iris-soft hover:bg-paper-dark'
 
 // iOS browsers (including Chrome) all run WebKit, which blocks programmatic audio
 // playback unless it originates from a user gesture. These users need an explicit
@@ -56,8 +57,8 @@ export default function Bloom({
 
   if (!bloom) {
     return (
-      <section className="flex flex-col gap-4">
-        <SectionTitle>In Bloom</SectionTitle>
+      <section className="card flex flex-col gap-4">
+        <SectionTitle variant="bloom">In Bloom</SectionTitle>
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="h-16 w-16 shrink-0 rounded-bloom bg-paper-dark sm:h-24 sm:w-24" />
           <p className="flex-1 font-serif text-lg italic text-muted">Nothing in bloom yet.</p>
@@ -65,7 +66,7 @@ export default function Bloom({
             <button
               onClick={onNext}
               disabled={!canStart}
-              className="shrink-0 rounded-bloom border border-line px-4 py-2 text-sm text-ink transition hover:border-iris-soft hover:bg-paper-dark disabled:opacity-50"
+              className="btn-ghost shrink-0 px-4 py-2 text-sm disabled:opacity-50"
             >
               Play
             </button>
@@ -79,10 +80,11 @@ export default function Bloom({
 
   const max = duration || bloom.duration || 0
   const value = scrub ?? current
+  const progress = max ? (Math.min(value, max) / max) * 100 : 0
 
   return (
-    <section className="relative flex flex-col gap-4">
-      <SectionTitle>In Bloom</SectionTitle>
+    <section className="card relative flex flex-col gap-4">
+      <SectionTitle variant="bloom">In Bloom</SectionTitle>
 
       {showUnlock && (
         <button
@@ -91,7 +93,7 @@ export default function Bloom({
             setUnlocked(true)
           }}
           disabled={!playerReady}
-          className="absolute inset-0 z-10 flex items-center justify-center rounded-bloom bg-ground/85 text-ink backdrop-blur-sm disabled:opacity-70"
+          className="absolute inset-0 z-10 flex items-center justify-center rounded-[18px] bg-ground/85 text-ink backdrop-blur-sm disabled:opacity-70"
         >
           <span className="font-serif text-lg italic">
             {playerReady
@@ -102,11 +104,15 @@ export default function Bloom({
       )}
 
       <div className="flex items-center gap-3 sm:gap-4">
-        <img
-          src={bloom.thumbnail}
-          alt=""
-          className="h-16 w-16 shrink-0 rounded-bloom object-cover sm:h-24 sm:w-24"
-        />
+        <div className="relative shrink-0">
+          <img
+            src={bloom.thumbnail}
+            alt=""
+            className="specimen-art h-16 w-16 rounded-md object-cover sm:h-24 sm:w-24"
+          />
+          {/* A sunflower tucked under the pressed specimen. */}
+          <Sunflower className="day-only pointer-events-none absolute -bottom-6 -right-4 w-8 rotate-12 sm:w-10" />
+        </div>
 
         <div className="min-w-0 flex-1">
           <p className="truncate font-serif text-lg text-ink sm:text-xl">{bloom.title}</p>
@@ -148,7 +154,8 @@ export default function Bloom({
               setScrub(null)
             }
           }}
-          className="h-1 w-full accent-iris disabled:cursor-default disabled:opacity-70"
+          className="stem-range w-full disabled:cursor-default disabled:opacity-70"
+          style={{ '--progress': `${progress}%` } as React.CSSProperties}
         />
         <div className="flex justify-between font-mono text-xs text-muted">
           <span>{formatDuration(Math.floor(value))}</span>
