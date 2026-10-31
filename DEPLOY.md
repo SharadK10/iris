@@ -43,13 +43,17 @@ Iris currently runs under pm2. The containers can start alongside it, and nginx 
 1. Run **Actions → Deploy API → Run workflow**. It copies the Compose file and script to `/opt/iris` and starts Redis and the API.
 2. Run **Actions → Deploy web → Run workflow**.
 3. Check both are healthy: `cd /opt/iris && docker compose ps`.
-4. In `/opt/easecampaign/nginx/nginx.prod.conf`, **replace the existing `iris.liv2code.in` server blocks** with the contents of `deploy/nginx-iris.conf` (keep a copy of the old blocks in case you need to switch back). Then:
+4. In `/opt/easecampaign/nginx/nginx.prod.conf`, **replace the two existing Iris server blocks** (`# Iris HTTP` and `# Iris HTTPS`, the ones serving `/usr/share/nginx/html/iris` and proxying to `iris_backend`) with the contents of `deploy/nginx-iris.conf`. Keep a copy of the old blocks in case you need to switch back. Leave the `upstream iris_backend { … }` block in place for now. Then:
    ```bash
    docker exec easecampaign_nginx nginx -t && docker exec easecampaign_nginx nginx -s reload
    ```
    Edit that file in place (`nano`, `vim`, or `cp new.conf nginx.prod.conf`), never with `sed -i`: it's mounted as a single file, and `sed -i` leaves the container reading the old one (fix: `docker restart easecampaign_nginx`).
 5. Open https://iris.liv2code.in, create an Echo, and check that search and playback work.
-6. Stop the old process: `pm2 stop iris && pm2 delete iris && pm2 save`. If Redis was installed only for Iris, it can go too (`sudo systemctl disable --now redis-server`).
+6. Retire the old setup once you're happy:
+   - Stop the old process: `pm2 stop iris && pm2 delete iris && pm2 save`.
+   - Remove the now-unused `upstream iris_backend { … }` block from `nginx.prod.conf`, then run the `nginx -t` and reload command from step 4 again.
+   - The old static build in `/usr/share/nginx/html/iris` (on the host, wherever that folder is mounted from) is no longer served and can be deleted.
+   - If Redis on the host was installed only for Iris, it can go too (`sudo systemctl disable --now redis-server`).
 
 Echoes and letters live in Redis and expire on their own (letters after 12 hours), so starting with a fresh `iris_redis` only drops whatever is open at the moment of the switch.
 
